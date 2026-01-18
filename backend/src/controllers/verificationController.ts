@@ -1,0 +1,435 @@
+import { Request, Response } from 'express';
+import ReferralVerification from '../models/ReferralVerification';
+import Referral from '../models/Referral';
+import User from '../models/User';
+import aiVerificationService from '../services/aiVerificationService';
+import paymentProcessingService from '../services/paymentProcessingService';
+import notificationService from '../services/notificationService';
+import { logger } from '../utils/logger';
+
+// Create verification record
+export const createVerification = async (req: Request, res: Response) => {
+  try {
+    const { referralId } = req.body;
+    
+    const referral = await Referral.findById(referralId);
+    if (!referral) return res.status(404).json({ error: 'Referral not found' });
+
+    // Check if verification already exists
+    const existing = await ReferralVerification.findOne({ referralId });
+    if (existing) return res.status(400).json({ error: 'Verification already exists' });
+
+    const paymentBreakdown = paymentProcessingService.calculatePayment(referral.reward);
+
+    const verification = new ReferralVerification({
+      referralId,
+      seekerId: referral.seekerId,
+      referrerId: referral.referrerId,
+      payment: paymentBreakdown,
+      timeline: [{
+        stage: 'created',
+        status: 'pending',
+        date: new Date(),
+        verifiedBy: 'user'
+      }]
+    });
+
+    await verification.save();
+    logger.info(`Verification created for referral ${referralId}`);
+    res.status(201).json({ verification });
+  } catch (error: any) {
+    logger.error(`Create verification error: ${error.message}`);
+    res.status(500).json({ error: error.message });
+  }
+};
+
+// Submit evidence
+export const submitEvidence = async (req: Request, res: Response) => {
+  try {
+    const { verificationId } = req.params;
+    const { type, url, uploadedBy } = req.body;
+    const userId = (req as any).user.id;
+
+    const verification = await ReferralVerification.findById(verificationId)
+      .populate('seekerId referrerId');
+
+    if (!verification) return res.status(404).json({ error: 'Verification not found' });
+
+    // Verify user is part of this referral
+    const isSeeker = verification.seekerId._id.toString() === userId;
+    const isReferrer = verification.referrerId._id.toString() === userId;
+    
+    if (!isSeeker && !isReferrer) {
+      return res.status(403).json({ error: 'Unauthorized' });
+    }
+
+    // Add evidence
+    verification.evidence.push({
+      type,
+      url,
+      uploadedBy,
+      uploadedAt: new Date(),
+      verified: false
+    });
+
+    verification.verificationStatus = 'under_review';
+    verification.timeline.push({
+      stage: 'evidence_submitted',
+      status: 'pending',
+      date: new Date(),
+      notes: `${type} uploaded by ${uploadedBy}`,
+      verifiedBy: 'user'
+    });
+
+    await verification.save();
+
+    // Run AI analysis
+    const analysis = await aiVerificationService.analyzeEvidence(verification.evidence);
+    
+    verification.aiAnalysis = {
+      confidenceScore: analysis.confidenceScore,
+      fraudRisk: analysis.fraudRisk,
+      recommendations: analysis.recommendations,
+      analyzedAt: new Date(),
+      evidenceQuality: analysis.evidenceQuality
+    };
+
+    // Auto-verify if confidence is high
+    if (analysis.confidenceScore >= 85 && analysis.fraudRisk === 'low') {
+      verification.verificationStatus = 'verified';
+      verification.autoVerified = true;
+      verification.timeline.push({
+        stage: 'auto_verified',
+        status: 'verified',
+        date: new Date(),
+        notes: 'Automatically verified by AI',
+        verifiedBy: 'ai'
+      });
+    } else if (analysis.fraudRisk === 'high' || analysis.confidenceScore < 50) {
+      verification.manualReviewRequired = true;
+    }
+
+    await verification.save();
+
+    // Notify both parties
+    const seeker = verification.seekerId as any;
+    const referrer = verification.referrerId as any;
+
+    await notificationService.notifyVerificationStage({
+      userId: uploadedBy === 'seeker' ? referrer._id.toString() : seeker._id.toString(),
+      userEmail: uploadedBy === 'seeker' ? referrer.email : seeker.email,
+      userName: uploadedBy === 'seeker' ? referrer.name : seeker.name,
+      stage: 'evidence_submitted',
+      status: 'under_review',
+      details: `New ${type} has been uploaded`
+    });
+
+    logger.info(`Evidence submitted for verification ${verificationId}`);
+    res.json({ verification, analysis });
+  } catch (error: any) {
+    logger.error(`Submit evidence error: ${error.message}`);
+    res.status(500).json({ error: error.message });
+  }
+};
+
+// Update verification stage
+export const updateStage = async (req: Request, res: Response) => {
+  try {
+    const { verificationId } = req.params;
+    const { stage, notes } = req.body;
+    const userId = (req as any).user.id;
+
+    const verification = await ReferralVerification.findById(verificationId)
+      .populate('seekerId referrerId');
+
+    if (!verification) return res.status(404).json({ error: 'Verification not found' });
+
+    verification.verificationStage = stage;
+    verification.timeline.push({
+      stage,
+      status: 'updated',
+      date: new Date(),
+      notes,
+      verifiedBy: 'user'
+    });
+
+    await verification.save();
+
+    // Notify both parties
+    const seeker = verification.seekerId as any;
+    const referrer = verification.referrerId as any;
+
+    await Promise.all([
+      notificationService.notifyVerificationStage({
+        userId: seeker._id.toString(),
+        userEmail: seeker.email,
+        userName: seeker.name,
+        stage,
+        status: 'updated',
+        details: notes
+      }),
+      notificationService.notifyVerificationStage({
+        userId: referrer._id.toString(),
+        userEmail: referrer.email,
+        userName: referrer.name,
+        stage,
+        status: 'updated',
+        details: notes
+      })
+    ]);
+
+    logger.info(`Verification stage updated: ${verificationId} -> ${stage}`);
+    res.json({ verification });
+  } catch (error: any) {
+    logger.error(`Update stage error: ${error.message}`);
+    res.status(500).json({ error: error.message });
+  }
+};
+
+// Verify and process payment
+export const verifyAndPay = async (req: Request, res: Response) => {
+  try {
+    const { verificationId } = req.params;
+
+    const verification = await ReferralVerification.findById(verificationId)
+      .populate('seekerId referrerId');
+
+    if (!verification) return res.status(404).json({ error: 'Verification not found' });
+
+    // Run final AI verification
+    const referral = await Referral.findById(verification.referralId);
+    const aiVerification = await aiVerificationService.verifyReferralCompletion({
+      referralDate: referral!.createdAt,
+      evidenceTypes: verification.evidence.map(e => e.type),
+      seekerConfirmed: verification.evidence.some(e => e.uploadedBy === 'seeker'),
+      referrerConfirmed: verification.evidence.some(e => e.uploadedBy === 'referrer'),
+      companyName: referral!.company,
+      role: referral!.role
+    });
+
+    if (!aiVerification.isVerified || aiVerification.requiresManualReview) {
+      verification.manualReviewRequired = true;
+      await verification.save();
+      
+      return res.status(400).json({ 
+        error: 'Manual review required',
+        reasoning: aiVerification.reasoning,
+        confidence: aiVerification.confidence
+      });
+    }
+
+    // Mark as verified
+    verification.verificationStatus = 'verified';
+    verification.timeline.push({
+      stage: 'verified',
+      status: 'completed',
+      date: new Date(),
+      notes: aiVerification.reasoning,
+      verifiedBy: 'ai'
+    });
+
+    await verification.save();
+
+    // Process payment
+    const paymentResult = await paymentProcessingService.processPayment(verificationId);
+
+    if (!paymentResult.success) {
+      return res.status(500).json({ error: 'Payment processing failed', details: paymentResult.error });
+    }
+
+    // Update referral status
+    await Referral.findByIdAndUpdate(verification.referralId, {
+      status: 'completed',
+      paymentStatus: 'released'
+    });
+
+    logger.info(`Verification completed and payment processed: ${verificationId}`);
+    res.json({ 
+      verification, 
+      payment: paymentResult,
+      aiVerification 
+    });
+  } catch (error: any) {
+    logger.error(`Verify and pay error: ${error.message}`);
+    res.status(500).json({ error: error.message });
+  }
+};
+
+// Get verification details
+export const getVerification = async (req: Request, res: Response) => {
+  try {
+    const { verificationId } = req.params;
+    
+    const verification = await ReferralVerification.findById(verificationId)
+      .populate('seekerId referrerId referralId');
+
+    if (!verification) return res.status(404).json({ error: 'Verification not found' });
+
+    res.json({ verification });
+  } catch (error: any) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+// Get user's verifications
+export const getUserVerifications = async (req: Request, res: Response) => {
+  try {
+    const userId = (req as any).user.id;
+    const { role } = req.query;
+
+    const filter: any = role === 'seeker' 
+      ? { seekerId: userId }
+      : role === 'referrer'
+      ? { referrerId: userId }
+      : { $or: [{ seekerId: userId }, { referrerId: userId }] };
+
+    const verifications = await ReferralVerification.find(filter)
+      .populate('seekerId referrerId referralId')
+      .sort({ createdAt: -1 });
+
+    res.json({ verifications });
+  } catch (error: any) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+// Raise dispute
+export const raiseDispute = async (req: Request, res: Response) => {
+  try {
+    const { verificationId } = req.params;
+    const { reason } = req.body;
+    const userId = (req as any).user.id;
+
+    const verification = await ReferralVerification.findById(verificationId)
+      .populate('seekerId referrerId');
+
+    if (!verification) return res.status(404).json({ error: 'Verification not found' });
+
+    const isSeeker = verification.seekerId._id.toString() === userId;
+    const isReferrer = verification.referrerId._id.toString() === userId;
+
+    if (!isSeeker && !isReferrer) {
+      return res.status(403).json({ error: 'Unauthorized' });
+    }
+
+    verification.dispute = {
+      raised: true,
+      raisedBy: isSeeker ? 'seeker' : 'referrer',
+      reason,
+      raisedAt: new Date()
+    };
+
+    verification.verificationStatus = 'disputed';
+    verification.manualReviewRequired = true;
+
+    verification.timeline.push({
+      stage: 'dispute',
+      status: 'raised',
+      date: new Date(),
+      notes: reason,
+      verifiedBy: 'user'
+    });
+
+    await verification.save();
+
+    // Notify admin and other party
+    const otherParty = isSeeker ? verification.referrerId : verification.seekerId;
+    await notificationService.notifyActionRequired({
+      userId: (otherParty as any)._id.toString(),
+      userEmail: (otherParty as any).email,
+      userName: (otherParty as any).name,
+      action: 'A dispute has been raised on your referral',
+      reason
+    });
+
+    logger.info(`Dispute raised for verification ${verificationId}`);
+    res.json({ verification });
+  } catch (error: any) {
+    logger.error(`Raise dispute error: ${error.message}`);
+    res.status(500).json({ error: error.message });
+  }
+};
+
+// Admin: Manual review
+export const manualReview = async (req: Request, res: Response) => {
+  try {
+    const { verificationId } = req.params;
+    const { approved, notes } = req.body;
+
+    const verification = await ReferralVerification.findById(verificationId);
+    if (!verification) return res.status(404).json({ error: 'Verification not found' });
+
+    verification.verificationStatus = approved ? 'verified' : 'rejected';
+    verification.manualReviewRequired = false;
+    verification.adminNotes = notes;
+
+    verification.timeline.push({
+      stage: 'manual_review',
+      status: approved ? 'approved' : 'rejected',
+      date: new Date(),
+      notes,
+      verifiedBy: 'admin'
+    });
+
+    await verification.save();
+
+    if (approved) {
+      // Process payment
+      await paymentProcessingService.processPayment(verificationId);
+    }
+
+    logger.info(`Manual review completed for ${verificationId}: ${approved ? 'approved' : 'rejected'}`);
+    res.json({ verification });
+  } catch (error: any) {
+    logger.error(`Manual review error: ${error.message}`);
+    res.status(500).json({ error: error.message });
+  }
+};
+
+// Get verification statistics
+export const getVerificationStats = async (req: Request, res: Response) => {
+  try {
+    const stats = await ReferralVerification.aggregate([
+      {
+        $facet: {
+          byStatus: [
+            { $group: { _id: '$verificationStatus', count: { $sum: 1 } } }
+          ],
+          byStage: [
+            { $group: { _id: '$verificationStage', count: { $sum: 1 } } }
+          ],
+          paymentStats: [
+            {
+              $group: {
+                _id: '$payment.status',
+                count: { $sum: 1 },
+                totalAmount: { $sum: '$payment.totalAmount' },
+                platformFees: { $sum: '$payment.platformFee' }
+              }
+            }
+          ],
+          aiStats: [
+            {
+              $group: {
+                _id: null,
+                avgConfidence: { $avg: '$aiAnalysis.confidenceScore' },
+                autoVerified: { $sum: { $cond: ['$autoVerified', 1, 0] } },
+                manualReview: { $sum: { $cond: ['$manualReviewRequired', 1, 0] } }
+              }
+            }
+          ]
+        }
+      }
+    ]);
+
+    const paymentStats = await paymentProcessingService.getPaymentStats();
+
+    res.json({ 
+      verificationStats: stats[0],
+      paymentStats
+    });
+  } catch (error: any) {
+    logger.error(`Get stats error: ${error.message}`);
+    res.status(500).json({ error: error.message });
+  }
+};

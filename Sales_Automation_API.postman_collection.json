@@ -1,0 +1,311 @@
+{
+  "info": {
+    "name": "AI Sales Automation API",
+    "description": "Complete API collection for testing the AI Sales Automation System",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3001",
+      "type": "string"
+    },
+    {
+      "key": "token",
+      "value": "your-jwt-token-here",
+      "type": "string"
+    },
+    {
+      "key": "leadId",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Lead Management",
+      "item": [
+        {
+          "name": "Create Lead",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"companyName\": \"Acme Corporation\",\n  \"contactPerson\": \"John Doe\",\n  \"email\": \"john.doe@acme.com\",\n  \"phone\": \"+1-555-0123\",\n  \"industry\": \"Technology\",\n  \"companySize\": \"201-500\",\n  \"source\": \"linkedin\",\n  \"budget\": 75000,\n  \"priority\": \"high\",\n  \"notes\": \"Interested in Q1 advertising campaign\",\n  \"sendInitialEmail\": true\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/sales/leads",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "sales", "leads"]
+            }
+          }
+        },
+        {
+          "name": "Get All Leads",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/sales/leads?page=1&limit=20",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "sales", "leads"],
+              "query": [
+                {
+                  "key": "status",
+                  "value": "new",
+                  "disabled": true
+                },
+                {
+                  "key": "priority",
+                  "value": "high",
+                  "disabled": true
+                },
+                {
+                  "key": "minScore",
+                  "value": "70",
+                  "disabled": true
+                },
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "20"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Single Lead",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/sales/leads/{{leadId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "sales", "leads", "{{leadId}}"]
+            }
+          }
+        },
+        {
+          "name": "Update Lead",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"qualified\",\n  \"priority\": \"urgent\",\n  \"budget\": 100000,\n  \"notes\": \"Updated after call - very interested\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/sales/leads/{{leadId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "sales", "leads", "{{leadId}}"]
+            }
+          }
+        },
+        {
+          "name": "Delete Lead",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/sales/leads/{{leadId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "sales", "leads", "{{leadId}}"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Call Management",
+      "item": [
+        {
+          "name": "Add Call Record with AI Analysis",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"transcript\": \"Hi John, this is Sarah from Marketing Solutions. I wanted to follow up on our previous conversation about your Q1 advertising needs. John mentioned they're looking to increase their digital presence and have a budget of around $75,000. He's particularly interested in social media campaigns and wants to see a proposal by next week. The conversation was very positive and he's excited to move forward.\",\n  \"duration\": 1800,\n  \"outcome\": \"Scheduled proposal presentation for next Tuesday\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/sales/leads/{{leadId}}/calls",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "sales", "leads", "{{leadId}}", "calls"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Email Automation",
+      "item": [
+        {
+          "name": "Send Email to Lead",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"type\": \"follow_up\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/sales/leads/{{leadId}}/email",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "sales", "leads", "{{leadId}}", "email"]
+            }
+          }
+        },
+        {
+          "name": "Send Custom Email",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"type\": \"proposal\",\n  \"customContent\": {\n    \"subject\": \"Your Custom Advertising Proposal\",\n    \"body\": \"<p>Hi John,</p><p>Thank you for your time today. As discussed, I've prepared a custom proposal for your Q1 campaign...</p>\"\n  }\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/sales/leads/{{leadId}}/email",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "sales", "leads", "{{leadId}}", "email"]
+            }
+          }
+        },
+        {
+          "name": "Send Bulk Emails",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"leadIds\": [\"lead_id_1\", \"lead_id_2\", \"lead_id_3\"],\n  \"type\": \"follow_up\",\n  \"delayBetweenEmails\": 3000\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/sales/emails/bulk",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "sales", "emails", "bulk"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "AI Features",
+      "item": [
+        {
+          "name": "Get AI Suggestions",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/sales/leads/{{leadId}}/suggestions",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "sales", "leads", "{{leadId}}", "suggestions"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Analytics",
+      "item": [
+        {
+          "name": "Get Dashboard Stats",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/sales/dashboard/stats",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "sales", "dashboard", "stats"]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}
