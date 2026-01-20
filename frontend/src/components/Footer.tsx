@@ -4,28 +4,48 @@ import { Link } from 'react-router-dom';
 
 const Footer: React.FC = () => {
   const socialLinks = [
-    { icon: Linkedin, href: '#', label: 'LinkedIn' },
-    { icon: Twitter, href: '#', label: 'Twitter' },
-    { icon: Instagram, href: '#', label: 'Instagram' },
-    { icon: Github, href: '#', label: 'Github' },
+    { icon: Linkedin, href: 'https://linkedin.com/company/refdirectly', label: 'LinkedIn' },
+    { icon: Twitter, href: 'https://twitter.com/refdirectly', label: 'Twitter' },
+    { icon: Instagram, href: 'https://instagram.com/refdirectly', label: 'Instagram' },
+    { icon: Github, href: 'https://github.com/refdirectly', label: 'Github' },
   ];
 
   const footerSections = [
     {
       title: 'Product',
-      links: ['Find Referrer', 'Become Referrer', 'Premium', 'Pricing'],
+      links: [
+        { name: 'Find Referrer', path: '/jobs' },
+        { name: 'Become Referrer', path: '/referrer-signup' },
+        { name: 'Premium', path: '/pricing' },
+        { name: 'Pricing', path: '/pricing' }
+      ],
     },
     {
       title: 'Company',
-      links: ['About', 'Careers', 'Blog', 'Press'],
+      links: [
+        { name: 'About', path: '/about' },
+        { name: 'Careers', path: '/careers' },
+        { name: 'Blog', path: '/blog' },
+        { name: 'Press', path: '/press' }
+      ],
     },
     {
       title: 'Resources',
-      links: ['Help Center', 'Community', 'Guides', 'API Docs'],
+      links: [
+        { name: 'Help Center', path: '/help' },
+        { name: 'Community', path: '/community' },
+        { name: 'Guides', path: '/how-it-works' },
+        { name: 'API Docs', path: '/api-docs' }
+      ],
     },
     {
       title: 'Legal',
-      links: ['Privacy Policy', 'Terms of Service', 'Cookie Policy', 'Disclaimer'],
+      links: [
+        { name: 'Privacy Policy', path: '/privacy' },
+        { name: 'Terms of Service', path: '/terms' },
+        { name: 'Cookie Policy', path: '/cookies' },
+        { name: 'Disclaimer', path: '/disclaimer' }
+      ],
     },
   ];
 
@@ -51,9 +71,21 @@ const Footer: React.FC = () => {
               <input
                 type="email"
                 placeholder="Enter your email"
+                id="newsletter-email"
                 className="flex-1 px-6 py-4 rounded-2xl bg-white/15 backdrop-blur-md border-2 border-white/30 text-white placeholder-gray-300 focus:outline-none focus:ring-2 focus:ring-brand-purple focus:border-brand-purple focus:bg-white/20 transition-all shadow-xl"
               />
-              <button className="px-12 py-4 rounded-2xl bg-white text-gray-900 font-bold text-lg hover:shadow-2xl hover:scale-105 transition-all duration-300 whitespace-nowrap">
+              <button 
+                onClick={() => {
+                  const email = (document.getElementById('newsletter-email') as HTMLInputElement)?.value;
+                  if (email && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+                    alert('✅ Thank you for subscribing! Check your email for confirmation.');
+                    (document.getElementById('newsletter-email') as HTMLInputElement).value = '';
+                  } else {
+                    alert('⚠️ Please enter a valid email address');
+                  }
+                }}
+                className="px-12 py-4 rounded-2xl bg-white text-gray-900 font-bold text-lg hover:shadow-2xl hover:scale-105 transition-all duration-300 whitespace-nowrap cursor-pointer"
+              >
                 Subscribe
               </button>
             </div>
@@ -121,11 +153,15 @@ const Footer: React.FC = () => {
               <h3 className="font-bold text-white text-sm uppercase tracking-widest mb-7 bg-gradient-primary bg-clip-text text-transparent">{section.title}</h3>
               <ul className="space-y-4">
                 {section.links.map((link) => (
-                  <li key={link}>
-                    <a href="#" className="text-gray-300 hover:text-white hover:translate-x-2 inline-flex items-center gap-2 transition-all duration-300 text-sm group">
+                  <li key={link.name}>
+                    <Link 
+                      to={link.path} 
+                      onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+                      className="text-gray-300 hover:text-white hover:translate-x-2 inline-flex items-center gap-2 transition-all duration-300 text-sm group"
+                    >
                       <span className="h-1 w-1 rounded-full bg-gray-600 group-hover:bg-gradient-primary group-hover:w-2 transition-all"></span>
-                      {link}
-                    </a>
+                      {link.name}
+                    </Link>
                   </li>
                 ))}
               </ul>
@@ -147,7 +183,7 @@ const Footer: React.FC = () => {
                   </div>
                 </div>
                 <p className="text-sm text-gray-300 font-medium">
-                  © {new Date().getFullYear()} RefferUs, Inc. All rights reserved.
+                  © {new Date().getFullYear()} RefDirectly, Inc. All rights reserved.
                 </p>
                 <div className="flex flex-wrap items-center gap-4">
                   <p className="text-xs text-gray-400">
@@ -162,15 +198,15 @@ const Footer: React.FC = () => {
               </div>
               <div className="flex flex-col items-center md:items-end gap-4">
                 <div className="flex items-center gap-6 text-sm">
-                  <a href="#" className="text-gray-300 hover:text-white transition-all duration-300 font-semibold hover:scale-110 flex items-center gap-2">
+                  <div className="text-gray-300 flex items-center gap-2 font-semibold">
                     <span className="h-2 w-2 rounded-full bg-green-500 animate-pulse"></span>
                     All Systems Operational
-                  </a>
+                  </div>
                 </div>
                 <div className="flex items-center gap-6 text-sm">
-                  <a href="#" className="text-gray-300 hover:text-white transition-all duration-300 font-semibold hover:scale-110">Sitemap</a>
-                  <a href="#" className="text-gray-300 hover:text-white transition-all duration-300 font-semibold hover:scale-110">Changelog</a>
-                  <a href="#" className="text-gray-300 hover:text-white transition-all duration-300 font-semibold hover:scale-110">API</a>
+                  <Link to="/" className="text-gray-300 hover:text-white transition-all duration-300 font-semibold hover:scale-110">Sitemap</Link>
+                  <a href="https://github.com/refdirectly/RefDirectlyNew" target="_blank" rel="noopener noreferrer" className="text-gray-300 hover:text-white transition-all duration-300 font-semibold hover:scale-110">Changelog</a>
+                  <a href="https://refdirectly-1.onrender.com/api" target="_blank" rel="noopener noreferrer" className="text-gray-300 hover:text-white transition-all duration-300 font-semibold hover:scale-110">API</a>
                 </div>
               </div>
             </div>

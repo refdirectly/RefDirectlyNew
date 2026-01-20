@@ -5,6 +5,7 @@ import User from '../models/User';
 import passport from '../config/passport';
 import OTP from '../models/OTP';
 import { sendOTP } from '../services/emailService';
+import notificationService from '../services/notificationService';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'referus-jwt-secret-key-2024-production-change-this';
 const JWT_EXPIRES_IN = '7d';
@@ -188,6 +189,18 @@ export const register = async (req: Request, res: Response) => {
       JWT_SECRET,
       { expiresIn: JWT_EXPIRES_IN }
     );
+
+    // Send welcome notification
+    await notificationService.sendNotification({
+      userId: user._id.toString(),
+      type: 'welcome',
+      title: `Welcome to RefDirectly, ${user.name}! 🎉`,
+      message: role === 'seeker' 
+        ? 'Start exploring job opportunities and connect with referrers from top companies.'
+        : 'Start earning by referring talented candidates to your company.',
+      priority: 'high',
+      link: role === 'seeker' ? '/seeker/dashboard' : '/referrer/dashboard'
+    });
 
     res.status(201).json({
       success: true,

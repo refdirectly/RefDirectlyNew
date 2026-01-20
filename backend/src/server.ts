@@ -35,6 +35,7 @@ import productionAIJobRoutes from './routes/productionAIJobs';
 import verificationRoutes from './routes/verification';
 import aiCallingRoutes from './routes/aiCalling';
 import salesScheduler from './services/salesScheduler';
+import careerRoutes from './routes/career';
 
 dotenv.config();
 
@@ -125,6 +126,7 @@ app.use('/api/api-jobs', apiJobRoutes);
 app.use('/api/subscription', subscriptionRoutes);
 app.use('/api/sales', salesRoutes);
 app.use('/api/ai-calling', aiCallingRoutes);
+app.use('/api/career', careerRoutes);
 
 // Health check
 app.get('/health', (req, res) => {

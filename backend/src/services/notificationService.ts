@@ -1,13 +1,17 @@
 import nodemailer from 'nodemailer';
 import { io } from '../server';
 import { logger } from '../utils/logger';
+import Notification from '../models/Notification';
 
-interface Notification {
+interface NotificationData {
   userId: string;
   type: string;
   title: string;
   message: string;
   data?: any;
+  link?: string;
+  priority?: 'low' | 'medium' | 'high' | 'urgent';
+  metadata?: any;
 }
 
 class NotificationService {
@@ -25,19 +29,34 @@ class NotificationService {
     });
   }
 
-  // Send notification (socket + email)
-  async sendNotification(notification: Notification): Promise<void> {
+  // Send notification (save to DB + socket + email)
+  async sendNotification(notification: NotificationData): Promise<void> {
     try {
-      // Send real-time notification via Socket.IO
-      io.to(notification.userId).emit('notification', {
+      // Save notification to database
+      const savedNotification = await Notification.create({
+        userId: notification.userId,
         type: notification.type,
         title: notification.title,
         message: notification.message,
-        data: notification.data,
-        timestamp: new Date()
+        priority: notification.priority || 'medium',
+        link: notification.link,
+        metadata: notification.data,
+        read: false
       });
 
-      logger.info(`Notification sent to user ${notification.userId}: ${notification.type}`);
+      // Send real-time notification via Socket.IO
+      io.to(notification.userId).emit('notification', {
+        _id: savedNotification._id,
+        type: notification.type,
+        title: notification.title,
+        message: notification.message,
+        read: false,
+        link: notification.link,
+        createdAt: savedNotification.createdAt,
+        data: notification.data
+      });
+
+      logger.info(`Notification sent and saved for user ${notification.userId}: ${notification.type}`);
     } catch (error: any) {
       logger.error(`Failed to send notification: ${error.message}`);
     }
@@ -298,6 +317,6 @@ class NotificationService {
 }
 
 export default new NotificationService();
-export const createNotification = (notification: Notification) => {
+export const createNotification = (notification: NotificationData) => {
   return new NotificationService().sendNotification(notification);
 };

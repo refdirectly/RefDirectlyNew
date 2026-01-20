@@ -130,9 +130,42 @@ const AIJobSearch: React.FC = () => {
                     {job.description && (
                       <p className="text-sm text-gray-600 mt-2 line-clamp-2">{job.description}</p>
                     )}
-                    <button className="mt-4 bg-gradient-primary text-white px-6 py-2 rounded-lg font-semibold hover:shadow-lg transition-all">
-                      Find Referrer
-                    </button>
+                    <div className="mt-4 flex gap-3">
+                      <button 
+                        onClick={async () => {
+                          const token = localStorage.getItem('token');
+                          if (!token) {
+                            alert('Please login to apply');
+                            return;
+                          }
+                          try {
+                            const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+                            await fetch(`${API_URL}/api/applications`, {
+                              method: 'POST',
+                              headers: {
+                                'Authorization': `Bearer ${token}`,
+                                'Content-Type': 'application/json'
+                              },
+                              body: JSON.stringify({
+                                externalJobId: job._id,
+                                jobTitle: job.job_title,
+                                company: job.employer_name,
+                                status: 'applied'
+                              })
+                            });
+                            alert('✅ Application submitted!');
+                          } catch (error) {
+                            alert('Failed to apply');
+                          }
+                        }}
+                        className="bg-gradient-primary text-white px-6 py-2 rounded-lg font-semibold hover:shadow-lg transition-all"
+                      >
+                        AI Apply Now
+                      </button>
+                      <button className="border-2 border-brand-purple text-brand-purple px-6 py-2 rounded-lg font-semibold hover:bg-brand-purple hover:text-white transition-all">
+                        Find Referrer
+                      </button>
+                    </div>
                   </div>
                 </div>
               </div>

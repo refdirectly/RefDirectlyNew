@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Link, useNavigate } from 'react-router-dom';
-import { AlertCircle, Loader2, CheckCircle, User, Building2 } from 'lucide-react';
+import { AlertCircle, Loader2, CheckCircle, User, Building2, Eye, EyeOff } from 'lucide-react';
+import { validateEmail, validatePassword, validatePasswordMatch } from '../utils/validation';
 
 const SignUp: React.FC = () => {
   const [userType, setUserType] = useState<'seeker' | 'referrer' | null>(null);
@@ -18,6 +19,9 @@ const SignUp: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [fieldErrors, setFieldErrors] = useState({ email: '', password: '', confirmPassword: '' });
   const navigate = useNavigate();
 
   const organizationDomains = ['gmail.com', 'yahoo.com', 'hotmail.com', 'outlook.com', 'icloud.com'];
@@ -91,18 +95,22 @@ const SignUp: React.FC = () => {
     e.preventDefault();
     setError('');
 
+    // Validate all fields
+    const emailValidation = validateEmail(formData.email);
+    const passwordValidation = validatePassword(formData.password);
+    const passwordMatchValidation = validatePasswordMatch(formData.password, formData.confirmPassword);
+
+    if (!emailValidation.isValid || !passwordValidation.isValid || !passwordMatchValidation.isValid) {
+      setFieldErrors({
+        email: emailValidation.error,
+        password: passwordValidation.error,
+        confirmPassword: passwordMatchValidation.error
+      });
+      return;
+    }
+
     if (!otpVerified) {
       setError('Please verify your email with OTP first');
-      return;
-    }
-
-    if (formData.password !== formData.confirmPassword) {
-      setError('Passwords do not match');
-      return;
-    }
-
-    if (formData.password.length < 6) {
-      setError('Password must be at least 6 characters');
       return;
     }
 
@@ -144,7 +152,24 @@ const SignUp: React.FC = () => {
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+    setFormData({ ...formData, [name]: value });
+    
+    // Clear field error on change
+    if (fieldErrors[name as keyof typeof fieldErrors]) {
+      setFieldErrors({ ...fieldErrors, [name]: '' });
+    }
+  };
+
+  // Check if form is valid for submit button
+  const isFormValid = () => {
+    return (
+      formData.name &&
+      validateEmail(formData.email).isValid &&
+      validatePassword(formData.password).isValid &&
+      validatePasswordMatch(formData.password, formData.confirmPassword).isValid &&
+      otpVerified
+    );
   };
 
   if (!userType) {
@@ -426,39 +451,87 @@ const SignUp: React.FC = () => {
                 <label htmlFor="password" className="block text-sm font-semibold text-gray-700 mb-2">
                   Password
                 </label>
-                <input
-                  id="password"
-                  name="password"
-                  type="password"
-                  required
-                  value={formData.password}
-                  onChange={handleChange}
-                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-purple focus:border-transparent transition-all"
-                  placeholder="••••••••"
-                />
+                <div className="relative">
+                  <input
+                    id="password"
+                    name="password"
+                    type={showPassword ? 'text' : 'password'}
+                    required
+                    value={formData.password}
+                    onChange={handleChange}
+                    className={`w-full px-4 py-3 pr-12 border-2 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-purple focus:border-transparent transition-all ${
+                      fieldErrors.password ? 'border-red-300' : 'border-gray-200'
+                    }`}
+                    placeholder="••••••••"
+                    aria-label="Password"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 transition-colors"
+                    aria-label={showPassword ? 'Hide password' : 'Show password'}
+                    tabIndex={0}
+                  >
+                    {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                  </button>
+                </div>
+                {fieldErrors.password && (
+                  <p className="text-xs text-red-600 mt-1.5 flex items-center gap-1">
+                    <AlertCircle className="h-3 w-3" />
+                    {fieldErrors.password}
+                  </p>
+                )}
               </div>
               <div>
                 <label htmlFor="confirmPassword" className="block text-sm font-semibold text-gray-700 mb-2">
                   Confirm Password
                 </label>
-                <input
-                  id="confirmPassword"
-                  name="confirmPassword"
-                  type="password"
-                  required
-                  value={formData.confirmPassword}
-                  onChange={handleChange}
-                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-purple focus:border-transparent transition-all"
-                  placeholder="••••••••"
-                />
+                <div className="relative">
+                  <input
+                    id="confirmPassword"
+                    name="confirmPassword"
+                    type={showConfirmPassword ? 'text' : 'password'}
+                    required
+                    value={formData.confirmPassword}
+                    onChange={handleChange}
+                    className={`w-full px-4 py-3 pr-12 border-2 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-purple focus:border-transparent transition-all ${
+                      fieldErrors.confirmPassword ? 'border-red-300' : 'border-gray-200'
+                    }`}
+                    placeholder="••••••••"
+                    aria-label="Confirm password"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 transition-colors"
+                    aria-label={showConfirmPassword ? 'Hide password' : 'Show password'}
+                    tabIndex={0}
+                  >
+                    {showConfirmPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                  </button>
+                </div>
+                {fieldErrors.confirmPassword && (
+                  <p className="text-xs text-red-600 mt-1.5 flex items-center gap-1">
+                    <AlertCircle className="h-3 w-3" />
+                    {fieldErrors.confirmPassword}
+                  </p>
+                )}
               </div>
-              <div className="flex items-start gap-2 text-sm text-gray-600 bg-blue-50 p-3 rounded-lg">
+              <div className="flex items-start gap-2 text-xs text-gray-600 bg-blue-50 p-3 rounded-lg">
                 <CheckCircle className="h-4 w-4 text-blue-600 flex-shrink-0 mt-0.5" />
-                <span>Password must be at least 6 characters</span>
+                <div>
+                  <div className="font-semibold mb-1">Password requirements:</div>
+                  <ul className="space-y-0.5">
+                    <li>• Minimum 8 characters</li>
+                    <li>• At least 1 uppercase letter</li>
+                    <li>• At least 1 lowercase letter</li>
+                    <li>• At least 1 number</li>
+                  </ul>
+                </div>
               </div>
               <button
                 type="submit"
-                disabled={loading}
+                disabled={loading || !isFormValid()}
                 className="w-full bg-gradient-primary text-white py-4 rounded-xl font-bold text-lg hover:shadow-xl transition-all duration-200 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
               >
                 {loading && <Loader2 className="h-5 w-5 animate-spin" />}

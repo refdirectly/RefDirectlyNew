@@ -1,18 +1,34 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Link, useNavigate } from 'react-router-dom';
-import { AlertCircle, Loader2, Briefcase, TrendingUp, Users, CheckCircle } from 'lucide-react';
+import { AlertCircle, Loader2, Briefcase, TrendingUp, Users, CheckCircle, Eye, EyeOff } from 'lucide-react';
+import { validateEmail, validatePassword } from '../utils/validation';
 
 const Login: React.FC = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [fieldErrors, setFieldErrors] = useState({ email: '', password: '' });
   const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
+
+    // Validate fields
+    const emailValidation = validateEmail(email);
+    const passwordValidation = validatePassword(password);
+
+    if (!emailValidation.isValid || !passwordValidation.isValid) {
+      setFieldErrors({
+        email: emailValidation.error,
+        password: passwordValidation.error
+      });
+      return;
+    }
+
     setLoading(true);
 
     try {
@@ -138,26 +154,61 @@ const Login: React.FC = () => {
                     type="email"
                     required
                     value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-purple focus:border-transparent transition-all"
+                    onChange={(e) => {
+                      setEmail(e.target.value);
+                      if (fieldErrors.email) setFieldErrors({ ...fieldErrors, email: '' });
+                    }}
+                    className={`w-full px-4 py-3 border-2 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-purple focus:border-transparent transition-all ${
+                      fieldErrors.email ? 'border-red-300' : 'border-gray-200'
+                    }`}
                     placeholder="you@example.com"
+                    aria-label="Email address"
                   />
+                  {fieldErrors.email && (
+                    <p className="text-xs text-red-600 mt-1.5 flex items-center gap-1">
+                      <AlertCircle className="h-3 w-3" />
+                      {fieldErrors.email}
+                    </p>
+                  )}
                 </div>
 
                 <div>
                   <label htmlFor="password" className="block text-sm font-semibold text-gray-700 mb-2">
                     Password
                   </label>
-                  <input
-                    id="password"
-                    name="password"
-                    type="password"
-                    required
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-purple focus:border-transparent transition-all"
-                    placeholder="••••••••"
-                  />
+                  <div className="relative">
+                    <input
+                      id="password"
+                      name="password"
+                      type={showPassword ? 'text' : 'password'}
+                      required
+                      value={password}
+                      onChange={(e) => {
+                        setPassword(e.target.value);
+                        if (fieldErrors.password) setFieldErrors({ ...fieldErrors, password: '' });
+                      }}
+                      className={`w-full px-4 py-3 pr-12 border-2 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-purple focus:border-transparent transition-all ${
+                        fieldErrors.password ? 'border-red-300' : 'border-gray-200'
+                      }`}
+                      placeholder="••••••••"
+                      aria-label="Password"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 transition-colors"
+                      aria-label={showPassword ? 'Hide password' : 'Show password'}
+                      tabIndex={0}
+                    >
+                      {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                    </button>
+                  </div>
+                  {fieldErrors.password && (
+                    <p className="text-xs text-red-600 mt-1.5 flex items-center gap-1">
+                      <AlertCircle className="h-3 w-3" />
+                      {fieldErrors.password}
+                    </p>
+                  )}
                 </div>
 
                 <div className="flex items-center justify-between">
@@ -179,7 +230,7 @@ const Login: React.FC = () => {
 
                 <button
                   type="submit"
-                  disabled={loading}
+                  disabled={loading || !validateEmail(email).isValid || !validatePassword(password).isValid}
                   className="w-full bg-gradient-primary text-white py-4 rounded-xl font-bold text-lg hover:shadow-xl transition-all duration-200 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                 >
                   {loading && <Loader2 className="h-5 w-5 animate-spin" />}
@@ -197,7 +248,7 @@ const Login: React.FC = () => {
 
                 <div className="grid grid-cols-2 gap-4">
                   <a
-                    href="`${import.meta.env.VITE_API_URL || 'http://localhost:3001'}/api/auth/google`"
+                    href={`${import.meta.env.VITE_API_URL || 'http://localhost:3001'}/api/auth/google`}
                     className="flex items-center justify-center gap-2 px-4 py-3 border-2 border-gray-200 rounded-xl hover:border-brand-purple hover:bg-gray-50 transition-all font-semibold text-gray-700 hover:shadow-md"
                   >
                     <svg className="h-5 w-5" viewBox="0 0 24 24">
@@ -209,7 +260,7 @@ const Login: React.FC = () => {
                     Google
                   </a>
                   <a
-                    href="`${import.meta.env.VITE_API_URL || 'http://localhost:3001'}/api/auth/linkedin`"
+                    href={`${import.meta.env.VITE_API_URL || 'http://localhost:3001'}/api/auth/linkedin`}
                     className="flex items-center justify-center gap-2 px-4 py-3 border-2 border-gray-200 rounded-xl hover:border-brand-purple hover:bg-gray-50 transition-all font-semibold text-gray-700 hover:shadow-md"
                   >
                     <svg className="h-5 w-5" fill="#0077B5" viewBox="0 0 24 24">

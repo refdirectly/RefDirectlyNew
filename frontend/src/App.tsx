@@ -51,6 +51,9 @@ import ResetPassword from './pages/ResetPassword';
 import PricingPage from './pages/PricingPage';
 import CheckoutPage from './pages/CheckoutPage';
 import Chatbot from './components/Chatbot';
+import BlogPage from './pages/BlogPage';
+import { PressPage, HelpCenterPage, CommunityPage, APIDocsPage, PrivacyPolicyPage, TermsOfServicePage, CookiePolicyPage, DisclaimerPage, CareersPage } from './pages/PlaceholderPages';
+import ScrollToTop from './components/ScrollToTop';
 
 function LandingPage() {
   return (
@@ -72,6 +75,7 @@ function LandingPage() {
 function App() {
   return (
     <BrowserRouter>
+      <ScrollToTop />
       <Chatbot />
       <Routes>
         {/* Public Routes */}
@@ -81,6 +85,22 @@ function App() {
         <Route path="/testimonials" element={<TestimonialsPage />} />
         <Route path="/pricing" element={<PricingPage />} />
         <Route path="/checkout" element={<CheckoutPage />} />
+        
+        {/* Company Pages */}
+        <Route path="/blog" element={<BlogPage />} />
+        <Route path="/press" element={<PressPage />} />
+        <Route path="/careers" element={<CareersPage />} />
+        
+        {/* Resource Pages */}
+        <Route path="/help" element={<HelpCenterPage />} />
+        <Route path="/community" element={<CommunityPage />} />
+        <Route path="/api-docs" element={<APIDocsPage />} />
+        
+        {/* Legal Pages */}
+        <Route path="/privacy" element={<PrivacyPolicyPage />} />
+        <Route path="/terms" element={<TermsOfServicePage />} />
+        <Route path="/cookies" element={<CookiePolicyPage />} />
+        <Route path="/disclaimer" element={<DisclaimerPage />} />
         
         {/* Auth Routes */}
         <Route path="/auth/login" element={<Login />} />

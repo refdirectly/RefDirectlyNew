@@ -66,13 +66,21 @@ const AIJobSearchPage: React.FC = () => {
     setLoading(true);
     try {
       const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
-      const response = await fetch(`${API_URL}/api/jobs/live?keywords=software engineer&location=United States&num_pages=2`);
+      console.log('Fetching initial jobs...');
+      const response = await fetch(`${API_URL}/api/jobs/live?keywords=software engineer&location=any&num_pages=2`);
       const result = await response.json();
-      if (result.success && result.jobs) {
+      console.log('Initial Jobs Response:', result);
+      
+      if (result.success && result.jobs && Array.isArray(result.jobs)) {
+        console.log('Loaded initial jobs:', result.jobs.length);
         setJobs(result.jobs);
+      } else {
+        console.error('Invalid initial response:', result);
+        setJobs([]);
       }
     } catch (error) {
-      console.error('Failed to fetch jobs:', error);
+      console.error('Failed to fetch initial jobs:', error);
+      setJobs([]);
     } finally {
       setLoading(false);
     }
@@ -84,13 +92,21 @@ const AIJobSearchPage: React.FC = () => {
     setLoading(true);
     try {
       const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
-      const response = await fetch(`${API_URL}/api/jobs/live?keywords=${encodeURIComponent(aiQuery)}&location=United States&num_pages=2`);
+      console.log('AI Search Query:', aiQuery);
+      const response = await fetch(`${API_URL}/api/jobs/live?keywords=${encodeURIComponent(aiQuery)}&location=any&num_pages=2`);
       const result = await response.json();
-      if (result.success && result.jobs) {
+      console.log('AI Search Response:', result);
+      
+      if (result.success && result.jobs && Array.isArray(result.jobs)) {
+        console.log('Found jobs:', result.jobs.length);
         setJobs(result.jobs);
+      } else {
+        console.error('Invalid response format:', result);
+        setJobs([]);
       }
     } catch (error) {
       console.error('Failed to fetch jobs:', error);
+      setJobs([]);
     } finally {
       setLoading(false);
     }
@@ -102,14 +118,23 @@ const AIJobSearchPage: React.FC = () => {
       const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
       const keywords = suggestion.toLowerCase();
       setLoading(true);
-      fetch(`${API_URL}/api/jobs/live?keywords=${encodeURIComponent(keywords)}&location=United States&num_pages=2`)
+      console.log('Suggestion Search:', keywords);
+      fetch(`${API_URL}/api/jobs/live?keywords=${encodeURIComponent(keywords)}&location=any&num_pages=2`)
         .then(res => res.json())
         .then(result => {
-          if (result.success && result.jobs) {
+          console.log('Suggestion Response:', result);
+          if (result.success && result.jobs && Array.isArray(result.jobs)) {
+            console.log('Found jobs:', result.jobs.length);
             setJobs(result.jobs);
+          } else {
+            console.error('Invalid response:', result);
+            setJobs([]);
           }
         })
-        .catch(err => console.error(err))
+        .catch(err => {
+          console.error('Fetch error:', err);
+          setJobs([]);
+        })
         .finally(() => setLoading(false));
     }, 100);
   };
@@ -393,6 +418,20 @@ const AIJobSearchPage: React.FC = () => {
               <div className="text-center py-20">
                 <div className="inline-block h-12 w-12 animate-spin rounded-full border-4 border-solid border-brand-purple border-r-transparent mb-4"></div>
                 <p className="text-gray-600">AI is analyzing and matching jobs...</p>
+              </div>
+            ) : jobs.length === 0 ? (
+              <div className="text-center py-20">
+                <div className="h-20 w-20 rounded-full bg-gray-100 flex items-center justify-center mx-auto mb-4">
+                  <Search className="h-10 w-10 text-gray-400" />
+                </div>
+                <h3 className="text-xl font-bold text-gray-900 mb-2">No jobs found</h3>
+                <p className="text-gray-600 mb-6">Try a different search query or browse our suggestions above</p>
+                <button
+                  onClick={fetchInitialJobs}
+                  className="bg-gradient-primary text-white px-6 py-3 rounded-xl font-semibold hover:shadow-lg transition-all"
+                >
+                  Load Default Jobs
+                </button>
               </div>
             ) : (
               <div className="space-y-4">

@@ -27,6 +27,8 @@ const AdminDashboard: React.FC = () => {
   const [referrals, setReferrals] = useState<any[]>([]);
   const [applications, setApplications] = useState<any[]>([]);
   const [subscriptions, setSubscriptions] = useState<any[]>([]);
+  const [careerJobs, setCareerJobs] = useState<any[]>([]);
+  const [careerApplications, setCareerApplications] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [showBulkEmailModal, setShowBulkEmailModal] = useState(false);
@@ -62,12 +64,18 @@ const AdminDashboard: React.FC = () => {
         fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:3001'}/api/admin/subscriptions`, { headers }).catch(() => ({ json: () => ({ subscriptions: [] }) }))
       ]);
 
+      // Fetch career data
+      const careerJobsRes = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:3001'}/api/career/admin/jobs`, { headers }).catch(() => ({ json: () => [] }));
+      const careerAppsRes = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:3001'}/api/career/admin/applications`, { headers }).catch(() => ({ json: () => [] }));
+
       const usersData = await usersRes.json();
       const referralsData = await referralsRes.json();
       const appsData = await appsRes.json();
       const jobsData = await jobsRes.json();
       const paymentsData = await paymentsRes.json();
       const subsData = await subsRes.json();
+      const careerJobsData = await careerJobsRes.json();
+      const careerAppsData = await careerAppsRes.json();
 
       setUsers(usersData.users || []);
       setReferrals(referralsData.referrals || []);
@@ -75,6 +83,8 @@ const AdminDashboard: React.FC = () => {
       setJobs(jobsData.jobs || jobsData || []);
       setPayments(paymentsData.payments || []);
       setSubscriptions(subsData.subscriptions || []);
+      setCareerJobs(Array.isArray(careerJobsData) ? careerJobsData : []);
+      setCareerApplications(Array.isArray(careerAppsData) ? careerAppsData : []);
 
       setStats({
         totalUsers: usersData.users?.length || 0,
@@ -245,6 +255,7 @@ const AdminDashboard: React.FC = () => {
             { id: 'referrals', label: 'Referrals', icon: UserCheck },
             { id: 'applications', label: 'Applications', icon: Briefcase },
             { id: 'jobs', label: 'Jobs', icon: Briefcase },
+            { id: 'careers', label: 'Careers', icon: Briefcase },
             { id: 'payments', label: 'Payments', icon: DollarSign },
             { id: 'subscriptions', label: 'Subscriptions', icon: TrendingUp },
             { id: 'sales', label: 'Sales', icon: TrendingUp },
@@ -703,6 +714,154 @@ const AdminDashboard: React.FC = () => {
                   <p className="text-sm text-orange-600 font-semibold">Retention Rate</p>
                   <p className="text-3xl font-bold text-orange-700 mt-2">78%</p>
                 </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {activeTab === 'careers' && (
+          <div className="space-y-6">
+            <div className="bg-white rounded-xl shadow-lg p-6">
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-xl font-bold text-gray-900">Career Job Postings</h2>
+                <button 
+                  onClick={() => {
+                    const title = prompt('Job Title:');
+                    if (!title) return;
+                    const dept = prompt('Department:');
+                    const desc = prompt('Description:');
+                    fetch(`${import.meta.env.VITE_API_URL}/api/career/admin/jobs`, {
+                      method: 'POST',
+                      headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}`, 'Content-Type': 'application/json' },
+                      body: JSON.stringify({ title, department: dept, location: 'Remote', type: 'Full-time', description: desc, requirements: [], responsibilities: [], benefits: [] })
+                    }).then(() => { alert('Job created!'); fetchAdminData(); });
+                  }}
+                  className="px-4 py-2 bg-gradient-primary text-white rounded-lg hover:shadow-lg transition-all"
+                >
+                  Add New Job
+                </button>
+              </div>
+              <div className="space-y-4">
+                {careerJobs.length === 0 ? (
+                  <div className="text-center py-12 text-gray-500">
+                    <Briefcase className="h-16 w-16 mx-auto mb-4 text-gray-300" />
+                    <p>No career jobs posted yet</p>
+                  </div>
+                ) : (
+                  careerJobs.map((job) => (
+                    <div key={job._id} className="p-4 border border-gray-200 rounded-lg hover:border-brand-purple transition-colors">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <h3 className="font-bold text-gray-900">{job.title}</h3>
+                          <p className="text-sm text-gray-600">{job.department} • {job.location} • {job.type}</p>
+                          <p className="text-xs text-gray-500 mt-1">Posted: {new Date(job.createdAt).toLocaleDateString()}</p>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <span className={`px-3 py-1 rounded-full text-xs font-semibold ${job.isActive ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-700'}`}>
+                            {job.isActive ? 'Active' : 'Inactive'}
+                          </span>
+                          <button 
+                            onClick={() => {
+                              if (confirm('Toggle job status?')) {
+                                fetch(`${import.meta.env.VITE_API_URL}/api/career/admin/jobs/${job._id}`, {
+                                  method: 'PUT',
+                                  headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}`, 'Content-Type': 'application/json' },
+                                  body: JSON.stringify({ isActive: !job.isActive })
+                                }).then(() => fetchAdminData());
+                              }
+                            }}
+                            className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg"
+                          >
+                            Toggle
+                          </button>
+                          <button 
+                            onClick={() => {
+                              if (confirm('Delete this job?')) {
+                                fetch(`${import.meta.env.VITE_API_URL}/api/career/admin/jobs/${job._id}`, {
+                                  method: 'DELETE',
+                                  headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+                                }).then(() => fetchAdminData());
+                              }
+                            }}
+                            className="p-2 text-red-600 hover:bg-red-50 rounded-lg"
+                          >
+                            Delete
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+            </div>
+
+            <div className="bg-white rounded-xl shadow-lg p-6">
+              <h2 className="text-xl font-bold text-gray-900 mb-6">Career Applications</h2>
+              <div className="space-y-4">
+                {careerApplications.length === 0 ? (
+                  <div className="text-center py-12 text-gray-500">
+                    <Users className="h-16 w-16 mx-auto mb-4 text-gray-300" />
+                    <p>No applications received yet</p>
+                  </div>
+                ) : (
+                  careerApplications.map((app) => (
+                    <div key={app._id} className="p-4 border border-gray-200 rounded-lg hover:border-brand-purple transition-colors">
+                      <div className="flex items-start justify-between">
+                        <div className="flex-1">
+                          <h3 className="font-bold text-gray-900">{app.fullName}</h3>
+                          <p className="text-sm text-gray-600">{app.email} • {app.phone}</p>
+                          <p className="text-sm text-gray-600 mt-1">Job: {app.jobId?.title || 'Unknown'}</p>
+                          <p className="text-sm text-gray-600">Experience: {app.experience} years</p>
+                          {app.skills && app.skills.length > 0 && (
+                            <div className="flex flex-wrap gap-2 mt-2">
+                              {app.skills.map((skill: string, i: number) => (
+                                <span key={i} className="px-2 py-1 bg-blue-50 text-blue-700 text-xs rounded-full">{skill}</span>
+                              ))}
+                            </div>
+                          )}
+                          <p className="text-xs text-gray-500 mt-2">Applied: {new Date(app.createdAt).toLocaleDateString()}</p>
+                        </div>
+                        <div className="flex flex-col items-end gap-2">
+                          <select
+                            value={app.status}
+                            onChange={(e) => {
+                              fetch(`${import.meta.env.VITE_API_URL}/api/career/admin/applications/${app._id}`, {
+                                method: 'PUT',
+                                headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}`, 'Content-Type': 'application/json' },
+                                body: JSON.stringify({ status: e.target.value })
+                              }).then(() => fetchAdminData());
+                            }}
+                            className={`px-3 py-1 rounded-lg text-xs font-semibold border-2 ${
+                              app.status === 'hired' ? 'bg-green-100 text-green-700 border-green-300' :
+                              app.status === 'shortlisted' ? 'bg-blue-100 text-blue-700 border-blue-300' :
+                              app.status === 'reviewing' ? 'bg-yellow-100 text-yellow-700 border-yellow-300' :
+                              app.status === 'rejected' ? 'bg-red-100 text-red-700 border-red-300' :
+                              'bg-gray-100 text-gray-700 border-gray-300'
+                            }`}
+                          >
+                            <option value="pending">Pending</option>
+                            <option value="reviewing">Reviewing</option>
+                            <option value="shortlisted">Shortlisted</option>
+                            <option value="rejected">Rejected</option>
+                            <option value="hired">Hired</option>
+                          </select>
+                          {app.resumeUrl && (
+                            <a href={app.resumeUrl} target="_blank" rel="noopener noreferrer" className="text-xs text-brand-purple hover:underline">View Resume</a>
+                          )}
+                          {app.linkedinUrl && (
+                            <a href={app.linkedinUrl} target="_blank" rel="noopener noreferrer" className="text-xs text-brand-purple hover:underline">LinkedIn</a>
+                          )}
+                        </div>
+                      </div>
+                      {app.coverLetter && (
+                        <div className="mt-3 p-3 bg-gray-50 rounded-lg">
+                          <p className="text-xs font-semibold text-gray-700 mb-1">Cover Letter:</p>
+                          <p className="text-xs text-gray-600">{app.coverLetter}</p>
+                        </div>
+                      )}
+                    </div>
+                  ))
+                )}
               </div>
             </div>
           </div>
