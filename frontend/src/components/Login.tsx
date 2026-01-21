@@ -102,7 +102,7 @@ const Login: React.FC = () => {
               className="text-white hidden lg:block"
             >
               <Link to="/" className="inline-block mb-8">
-                <img src="/logo.png" alt="RefferUs" className="h-20 w-auto brightness-0 invert" />
+                <img src="/logo.png" alt="RefDirectly" className="h-20 w-auto brightness-0 invert" />
               </Link>
               <h1 className="font-display text-5xl font-bold mb-6">
                 Welcome Back!
@@ -128,7 +128,7 @@ const Login: React.FC = () => {
               </div>
 
               <div className="bg-white/10 backdrop-blur-sm rounded-xl p-6">
-                <h3 className="font-bold text-lg mb-3">Why Choose RefferUs?</h3>
+                <h3 className="font-bold text-lg mb-3">Why Choose RefDirectly?</h3>
                 <div className="space-y-3">
                   <div className="flex items-start gap-3">
                     <CheckCircle className="h-5 w-5 mt-0.5 flex-shrink-0" />

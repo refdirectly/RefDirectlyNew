@@ -14,7 +14,7 @@ const Chatbot: React.FC = () => {
   const [messages, setMessages] = useState<Message[]>([
     {
       id: '1',
-      text: 'Welcome to RefferUs! I\'m here to assist you with job referrals, pricing, and platform features. How may I help you today?',
+      text: 'Welcome to RefDirectly! I\'m here to assist you with job referrals, pricing, and platform features. How may I help you today?',
       sender: 'bot',
       timestamp: new Date(),
     },
@@ -56,7 +56,7 @@ const Chatbot: React.FC = () => {
     } else if (lowerInput.includes('price') || lowerInput.includes('cost') || lowerInput.includes('pricing')) {
       return 'Our pricing structure:\n\n• Basic Referrals: Starting at $50\n• Premium Plans: Unlimited referrals with priority matching\n• Secure Escrow: All payments protected until referral confirmed\n\nWould you like to learn more about our Premium membership?';
     } else if (lowerInput.includes('how') || lowerInput.includes('work')) {
-      return 'RefferUs streamlines the referral process:\n\n1. Browse 500+ companies with verified referrers\n2. AI-powered matching connects you instantly\n3. Secure chat for discussing opportunities\n4. Escrow-protected payments\n5. Get referred and land your dream job\n\nJoin 50,000+ professionals already using RefferUs!';
+      return 'RefDirectly streamlines the referral process:\n\n1. Browse 500+ companies with verified referrers\n2. AI-powered matching connects you instantly\n3. Secure chat for discussing opportunities\n4. Escrow-protected payments\n5. Get referred and land your dream job\n\nJoin 50,000+ professionals already using RefDirectly!';
     } else if (lowerInput.includes('premium')) {
       return 'Premium Membership Benefits:\n\n✓ Unlimited referrals\n✓ Priority AI matching\n✓ Resume optimization\n✓ Dedicated support team\n✓ Advanced analytics\n✓ Early access to new features\n\nUpgrade today to accelerate your job search!';
     } else if (lowerInput.includes('safe') || lowerInput.includes('secure') || lowerInput.includes('trust')) {
