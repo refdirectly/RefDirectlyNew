@@ -1,22 +1,24 @@
 import React, { useState } from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Link, useNavigate } from 'react-router-dom';
-import { AlertCircle, Loader2, Building2, TrendingUp, Users, DollarSign } from 'lucide-react';
+import { AlertCircle, Loader2, Building2, TrendingUp, Users, DollarSign, CheckCircle, Sparkles, Briefcase } from 'lucide-react';
 
 const ReferrerLoginPage: React.FC = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [success, setSuccess] = useState(false);
   const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
+    setSuccess(false);
     setLoading(true);
 
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL || `${import.meta.env.VITE_API_URL || 'http://localhost:3001'}`}/api/auth/login`, {
+      const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:3001'}/api/auth/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password })
@@ -28,18 +30,31 @@ const ReferrerLoginPage: React.FC = () => {
         throw new Error(data.message || 'Login failed');
       }
 
+      if (data.user.role === 'seeker') {
+        setError('This is the Referrer login page. Please use the Job Seeker login page.');
+        setLoading(false);
+        return;
+      }
+
       if (data.user.role !== 'referrer') {
-        setError('This login is for referrers only. Please use the regular login.');
+        setError('Invalid account type. This login is for referrers only.');
         setLoading(false);
         return;
       }
 
       localStorage.setItem('token', data.token);
       localStorage.setItem('user', JSON.stringify(data.user));
-      navigate('/referrer-dashboard');
+      localStorage.setItem('userId', data.user.id);
+      
+      setSuccess(true);
+      
+      setTimeout(() => {
+        navigate('/referrer/dashboard', {
+          state: { welcomeBack: true, userName: data.user.name }
+        });
+      }, 1000);
     } catch (err: any) {
       setError(err.message || 'An error occurred. Please try again.');
-    } finally {
       setLoading(false);
     }
   };
@@ -123,16 +138,44 @@ const ReferrerLoginPage: React.FC = () => {
               </div>
 
               <form onSubmit={handleSubmit} className="space-y-6">
-                {error && (
-                  <motion.div
-                    initial={{ opacity: 0, y: -10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className="bg-red-50 border border-red-200 rounded-lg p-4 flex items-start gap-3"
-                  >
-                    <AlertCircle className="h-5 w-5 text-red-600 flex-shrink-0 mt-0.5" />
-                    <p className="text-sm text-red-800">{error}</p>
-                  </motion.div>
-                )}
+                <AnimatePresence mode="wait">
+                  {error && (
+                    <motion.div
+                      initial={{ opacity: 0, y: -10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -10 }}
+                      className="bg-red-50 border-2 border-red-200 rounded-xl p-4 flex items-start gap-3"
+                    >
+                      <AlertCircle className="h-5 w-5 text-red-600 flex-shrink-0 mt-0.5" />
+                      <div className="flex-1">
+                        <p className="text-sm font-semibold text-red-800">{error}</p>
+                        {error.includes('Job Seeker') && (
+                          <Link 
+                            to="/auth/login" 
+                            className="inline-flex items-center gap-1 text-xs text-red-700 hover:text-red-900 font-medium mt-2 underline"
+                          >
+                            <Briefcase className="h-3 w-3" />
+                            Go to Job Seeker Login Page
+                          </Link>
+                        )}
+                      </div>
+                    </motion.div>
+                  )}
+                  {success && (
+                    <motion.div
+                      initial={{ opacity: 0, scale: 0.95 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      exit={{ opacity: 0, scale: 0.95 }}
+                      className="bg-green-50 border border-green-200 rounded-lg p-4 flex items-start gap-3"
+                    >
+                      <CheckCircle className="h-5 w-5 text-green-600 flex-shrink-0 mt-0.5" />
+                      <div>
+                        <p className="text-sm font-semibold text-green-800">Login Successful!</p>
+                        <p className="text-xs text-green-700 mt-0.5">Redirecting to your dashboard...</p>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
 
                 <div>
                   <label htmlFor="email" className="block text-sm font-semibold text-gray-700 mb-2">
@@ -185,11 +228,12 @@ const ReferrerLoginPage: React.FC = () => {
 
                 <button
                   type="submit"
-                  disabled={loading}
+                  disabled={loading || success}
                   className="w-full bg-gradient-primary text-white py-4 rounded-xl font-bold text-lg hover:shadow-xl transition-all duration-200 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                 >
                   {loading && <Loader2 className="h-5 w-5 animate-spin" />}
-                  {loading ? 'Signing in...' : 'Sign In'}
+                  {success && <Sparkles className="h-5 w-5" />}
+                  {success ? 'Success!' : loading ? 'Signing in...' : 'Sign In'}
                 </button>
 
                 <div className="relative my-6">
