@@ -149,19 +149,19 @@ const ReferrerDashboard: React.FC = () => {
       
       <main className="flex-grow pt-32 md:pt-40 pb-12">
         <div className="container mx-auto px-4">
-          <div className="flex justify-between items-center mb-8">
+          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-8 gap-4">
             <div>
-              <h1 className="font-display text-4xl font-bold text-gray-900 mb-2">
+              <h1 className="font-display text-3xl sm:text-4xl font-bold text-gray-900 mb-2">
                 Welcome back, {user?.name || 'Referrer'}!
               </h1>
-              <p className="text-gray-600">Manage your referral requests and earnings</p>
+              <p className="text-sm sm:text-base text-gray-600">Manage your referral requests and earnings</p>
             </div>
             <button
               onClick={handleLogout}
-              className="flex items-center gap-2 px-4 py-2 text-gray-700 hover:text-red-600 transition-colors"
+              className="flex items-center justify-center sm:justify-start gap-2 px-5 py-2.5 bg-white border-2 border-gray-200 text-gray-700 hover:border-red-500 hover:text-red-600 hover:bg-red-50 rounded-xl transition-all font-semibold shadow-sm hover:shadow-md"
             >
-              <LogOut className="h-5 w-5" />
-              Logout
+              <LogOut className="h-4 w-4" />
+              <span>Logout</span>
             </button>
           </div>
 
