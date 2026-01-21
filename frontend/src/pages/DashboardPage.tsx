@@ -145,26 +145,25 @@ const DashboardPage: React.FC = () => {
             initial={{ opacity: 0, y: -100 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -100 }}
-            className="fixed top-24 left-1/2 -translate-x-1/2 z-50 max-w-md w-full mx-4"
+            className="fixed top-20 sm:top-24 left-4 right-4 sm:left-1/2 sm:right-auto sm:-translate-x-1/2 z-50 sm:w-full sm:max-w-lg"
           >
-            <div className="bg-gradient-to-r from-brand-purple via-brand-magenta to-brand-teal rounded-2xl shadow-2xl p-6 text-white">
-              <div className="flex items-start justify-between">
-                <div className="flex items-start gap-4">
-                  <div className="h-12 w-12 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center flex-shrink-0">
-                    <Sparkles className="h-6 w-6" />
-                  </div>
-                  <div>
-                    <h3 className="font-bold text-lg mb-1">Welcome Back, {location.state?.userName || user?.name}! 🎉</h3>
-                    <p className="text-sm text-white/90">You're successfully logged in. Let's find your dream job!</p>
-                  </div>
+            <div className="bg-gradient-to-r from-brand-purple via-brand-magenta to-brand-teal rounded-xl sm:rounded-2xl shadow-2xl p-3 sm:p-5 text-white">
+              <div className="flex items-start gap-2 sm:gap-3">
+                <div className="h-8 w-8 sm:h-10 sm:w-10 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center flex-shrink-0 mt-0.5">
+                  <Sparkles className="h-4 w-4 sm:h-5 sm:w-5" />
+                </div>
+                <div className="flex-1 min-w-0 pr-6">
+                  <h3 className="font-bold text-sm sm:text-base mb-0.5 sm:mb-1">Welcome Back, {location.state?.userName || user?.name}! 🎉</h3>
+                  <p className="text-xs sm:text-sm text-white/90">Successfully logged in. Let's find your dream job!</p>
                 </div>
                 <button
                   type="button"
                   onClick={() => setShowWelcome(false)}
-                  className="text-white/80 hover:text-white transition-colors"
-                  title="Close welcome message"
+                  className="absolute top-2 right-2 sm:top-3 sm:right-3 text-white/80 hover:text-white transition-colors p-1 hover:bg-white/10 rounded-full"
+                  title="Close"
+                  aria-label="Close welcome message"
                 >
-                  <X className="h-5 w-5" />
+                  <X className="h-4 w-4 sm:h-5 sm:w-5" />
                 </button>
               </div>
             </div>
