@@ -152,8 +152,10 @@ const NotificationBell: React.FC = () => {
   return (
     <div className="relative" ref={dropdownRef}>
       <button
+        type="button"
         onClick={() => setIsOpen(!isOpen)}
-        className="relative p-2 text-gray-600 hover:text-gray-900 focus:outline-none"
+        className="relative p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-brand-purple"
+        aria-label="Notifications"
       >
         <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
@@ -166,67 +168,94 @@ const NotificationBell: React.FC = () => {
       </button>
 
       {isOpen && (
-        <div className="absolute right-0 mt-2 w-96 bg-white rounded-lg shadow-xl border border-gray-200 z-50">
-          <div className="flex items-center justify-between p-4 border-b">
-            <h3 className="text-lg font-semibold">Notifications</h3>
+        <div className="absolute right-0 mt-2 w-80 sm:w-96 bg-white rounded-xl shadow-2xl border border-gray-200 z-50 max-h-[32rem] flex flex-col">
+          <div className="flex items-center justify-between p-4 border-b flex-shrink-0">
+            <h3 className="text-lg font-bold text-gray-900">Notifications</h3>
             {unreadCount > 0 && (
               <button
+                type="button"
                 onClick={markAllAsRead}
-                className="text-sm text-blue-600 hover:text-blue-800"
+                className="text-xs font-semibold text-blue-600 hover:text-blue-800 px-3 py-1.5 rounded-lg hover:bg-blue-50 transition-colors"
               >
                 Mark all read
               </button>
             )}
           </div>
 
-          <div className="max-h-96 overflow-y-auto">
+          <div className="overflow-y-auto flex-1">
             {loading ? (
-              <div className="p-8 text-center text-gray-500">Loading...</div>
-            ) : notifications.length === 0 ? (
               <div className="p-8 text-center text-gray-500">
-                <svg className="w-16 h-16 mx-auto mb-2 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
-                </svg>
-                <p>No notifications yet</p>
+                <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-brand-purple border-r-transparent mb-2"></div>
+                <p className="text-sm">Loading...</p>
+              </div>
+            ) : notifications.length === 0 ? (
+              <div className="p-8 text-center">
+                <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gray-100 mb-3">
+                  <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+                  </svg>
+                </div>
+                <p className="font-semibold text-gray-900 mb-1">No notifications yet</p>
+                <p className="text-sm text-gray-500">We'll notify you when something arrives</p>
               </div>
             ) : (
-              notifications.map(notification => (
-                <div
-                  key={notification._id}
-                  className={`p-4 border-b hover:bg-gray-50 transition-colors ${!notification.read ? 'bg-blue-50' : ''}`}
-                >
-                  <div className="flex items-start gap-3">
-                    <span className="text-2xl">{getNotificationIcon(notification.type)}</span>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-start justify-between gap-2">
-                        <h4 className="text-sm font-semibold text-gray-900">{notification.title}</h4>
-                        <button
-                          onClick={() => deleteNotification(notification._id)}
-                          className="text-gray-400 hover:text-red-600"
-                        >
-                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                          </svg>
-                        </button>
+              <div className="p-3">
+                {notifications.map(notification => (
+                  <div
+                    key={notification._id}
+                    className={`mb-2 last:mb-0 p-3 rounded-lg border transition-all hover:shadow-md cursor-pointer ${
+                      !notification.read 
+                        ? 'bg-blue-50 border-blue-200 hover:bg-blue-100' 
+                        : 'bg-white border-gray-200 hover:bg-gray-50'
+                    }`}
+                    onClick={() => !notification.read && markAsRead(notification._id)}
+                  >
+                    <div className="flex items-start gap-3">
+                      <div className="flex-shrink-0 w-9 h-9 rounded-lg bg-gradient-to-br from-brand-purple to-brand-magenta flex items-center justify-center text-white text-base shadow-sm">
+                        {getNotificationIcon(notification.type)}
                       </div>
-                      <p className="text-sm text-gray-600 mt-1">{notification.message}</p>
-                      <div className="flex items-center justify-between mt-2">
-                        <span className="text-xs text-gray-500">{formatTime(notification.createdAt)}</span>
-                        {!notification.read && (
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-start justify-between gap-2 mb-1">
+                          <h4 className="text-sm font-semibold text-gray-900 line-clamp-1">{notification.title}</h4>
                           <button
-                            onClick={() => markAsRead(notification._id)}
-                            className="text-xs text-blue-600 hover:text-blue-800"
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              deleteNotification(notification._id);
+                            }}
+                            className="text-gray-400 hover:text-red-600 transition-colors flex-shrink-0"
+                            aria-label="Delete notification"
                           >
-                            Mark as read
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                            </svg>
                           </button>
-                        )}
+                        </div>
+                        <p className="text-xs text-gray-600 line-clamp-2 mb-2">{notification.message}</p>
+                        <div className="flex items-center justify-between">
+                          <span className="text-xs text-gray-500">{formatTime(notification.createdAt)}</span>
+                          {!notification.read && (
+                            <span className="inline-flex items-center gap-1 text-xs font-medium text-blue-600">
+                              <span className="w-1.5 h-1.5 rounded-full bg-blue-600"></span>
+                              New
+                            </span>
+                          )}
+                        </div>
                       </div>
                     </div>
                   </div>
-                </div>
-              ))
+                ))}
+              </div>
             )}
           </div>
+          
+          {notifications.length > 0 && (
+            <div className="p-3 border-t bg-gray-50 flex-shrink-0">
+              <button type="button" className="w-full text-center text-sm font-semibold text-brand-purple hover:text-brand-magenta transition-colors py-2">
+                View all notifications
+              </button>
+            </div>
+          )}
         </div>
       )}
     </div>
