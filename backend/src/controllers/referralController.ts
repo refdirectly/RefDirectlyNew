@@ -3,9 +3,9 @@ import Referral from '../models/Referral';
 import Job from '../models/Job';
 import User from '../models/User';
 import { AuthRequest } from '../middleware/auth';
-import { createEscrow } from '../services/escrowService';
 import ReferralRequest from '../models/ReferralRequest';
 import notificationService from '../services/notificationService';
+import walletService from '../services/walletService';
 
 export const createReferral = async (req: AuthRequest, res: Response) => {
   try {
@@ -191,56 +191,81 @@ export const verifyUpiPayment = async (req: AuthRequest, res: Response) => {
 export const updateReferralStatus = async (req: AuthRequest, res: Response) => {
   try {
     const { status } = req.body;
+    const referralId = req.params.id;
     const updateData: any = { status };
     
-    if (status === 'accepted') {
-      updateData.referrerId = req.user?.userId;
-    }
-    
-    const referral = await Referral.findByIdAndUpdate(
-      req.params.id,
-      updateData,
-      { new: true }
-    ).populate('seekerId referrerId');
-    
+    const referral = await Referral.findById(referralId).populate('seekerId referrerId');
     if (!referral) return res.status(404).json({ error: 'Referral not found' });
     
-    // Send notifications based on status
-    if (status === 'accepted' && referral.seekerId) {
-      const referrer = await User.findById(req.user?.userId);
-      await notificationService.create({
-        recipientUserId: (referral.seekerId as any)._id.toString(),
-        recipientRole: 'seeker',
-        title: '🎉 Referral Accepted!',
-        message: `${referrer?.name || 'A referrer'} accepted your referral request for ${referral.role} at ${referral.company}`,
-        type: 'status_update',
-        entityId: referral._id.toString()
-      });
-    } else if (status === 'rejected' && referral.seekerId) {
-      await notificationService.create({
-        recipientUserId: (referral.seekerId as any)._id.toString(),
-        recipientRole: 'seeker',
-        title: 'Referral Declined',
-        message: `Your referral request for ${referral.role} at ${referral.company} was declined`,
-        type: 'status_update',
-        entityId: referral._id.toString()
-      });
-    } else if (status === 'completed') {
-      // Notify referrer about completion and payment
-      if (referral.referrerId) {
-        const seeker = await User.findById(referral.seekerId);
-        await notificationService.create({
-          recipientUserId: (referral.referrerId as any)._id.toString(),
-          recipientRole: 'referrer',
-          title: '💰 Referral Completed!',
-          message: `${seeker?.name || 'Job seeker'} completed the referral for ${referral.role} at ${referral.company}. Payment will be processed.`,
-          type: 'status_update',
-          entityId: referral._id.toString()
+    // ESCROW LOCK: Only when referrer accepts
+    if (status === 'accepted') {
+      updateData.referrerId = req.user?.userId;
+      
+      // Lock funds from seeker's wallet to escrow
+      try {
+        await walletService.lockFundsToEscrow(
+          referralId,
+          (referral.seekerId as any)._id.toString(),
+          req.user?.userId!,
+          referral.reward || 5000
+        );
+      } catch (error: any) {
+        return res.status(400).json({ 
+          success: false, 
+          message: `Cannot accept: ${error.message}` 
         });
       }
     }
     
-    res.json(referral);
+    // Update referral
+    const updatedReferral = await Referral.findByIdAndUpdate(
+      referralId,
+      updateData,
+      { new: true }
+    ).populate('seekerId referrerId');
+    
+    // Send notifications
+    if (status === 'accepted' && updatedReferral!.seekerId) {
+      const referrer = await User.findById(req.user?.userId);
+      await notificationService.create({
+        recipientUserId: (updatedReferral!.seekerId as any)._id.toString(),
+        recipientRole: 'seeker',
+        title: '🎉 Referral Accepted! Payment Secured',
+        message: `${referrer?.name || 'A referrer'} accepted your request. ₹${updatedReferral!.reward} locked in escrow.`,
+        type: 'status_update',
+        entityId: updatedReferral!._id.toString()
+      });
+    } else if (status === 'rejected' && updatedReferral!.seekerId) {
+      await notificationService.create({
+        recipientUserId: (updatedReferral!.seekerId as any)._id.toString(),
+        recipientRole: 'seeker',
+        title: 'Referral Declined',
+        message: `Your request for ${updatedReferral!.role} at ${updatedReferral!.company} was declined. No charges applied.`,
+        type: 'status_update',
+        entityId: updatedReferral!._id.toString()
+      });
+    } else if (status === 'completed') {
+      // ESCROW RELEASE: Release funds to referrer
+      try {
+        await walletService.releaseEscrow(referralId);
+      } catch (error: any) {
+        console.error('Escrow release error:', error);
+      }
+      
+      if (updatedReferral!.referrerId) {
+        const seeker = await User.findById(updatedReferral!.seekerId);
+        await notificationService.create({
+          recipientUserId: (updatedReferral!.referrerId as any)._id.toString(),
+          recipientRole: 'referrer',
+          title: '💰 Payment Released!',
+          message: `₹${updatedReferral!.reward} credited to your wallet for ${updatedReferral!.role} referral.`,
+          type: 'status_update',
+          entityId: updatedReferral!._id.toString()
+        });
+      }
+    }
+    
+    res.json(updatedReferral);
   } catch (error) {
     res.status(500).json({ error: 'Failed to update referral' });
   }
