@@ -126,20 +126,10 @@ export const createReferralWithPayment = async (req: AuthRequest, res: Response)
 
     await referralRequest.save();
 
-    // Create escrow transaction (using a dummy referrer ID for now)
-    const dummyReferrerId = '507f1f77bcf86cd799439011'; // Will be updated when referrer accepts
-    const escrow = await createEscrow(seekerId, dummyReferrerId, referralRequest._id.toString(), amount);
-
     const response: any = { 
       success: true, 
       referralRequest,
-      escrow: {
-        id: escrow._id,
-        amount: escrow.amount,
-        expiryAt: escrow.expiryAt,
-        status: escrow.status
-      },
-      message: paymentDetails.method === 'upi' ? 'UPI QR code generated. Complete payment to proceed.' : 'Payment processed and held in escrow. Referrer will be notified.'
+      message: paymentDetails.method === 'upi' ? 'UPI QR code generated. Complete payment to proceed.' : 'Referral request created successfully.'
     };
 
     if (qrCode) {

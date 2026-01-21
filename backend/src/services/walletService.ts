@@ -156,7 +156,7 @@ class WalletService {
         amount: escrow.amount,
         description: 'Escrow released to referrer',
         referralId: new mongoose.Types.ObjectId(referralId),
-        escrowId: escrow._id,
+        escrowId: escrow._id as mongoose.Types.ObjectId,
         status: 'COMPLETED',
         createdAt: new Date()
       });
@@ -169,7 +169,7 @@ class WalletService {
         amount: escrow.amount,
         description: 'Referral payment received',
         referralId: new mongoose.Types.ObjectId(referralId),
-        escrowId: escrow._id,
+        escrowId: escrow._id as mongoose.Types.ObjectId,
         status: 'COMPLETED',
         createdAt: new Date()
       });
@@ -214,7 +214,7 @@ class WalletService {
         amount: escrow.amount,
         description: 'Escrow refunded',
         referralId: new mongoose.Types.ObjectId(referralId),
-        escrowId: escrow._id,
+        escrowId: escrow._id as mongoose.Types.ObjectId,
         status: 'COMPLETED',
         createdAt: new Date()
       });

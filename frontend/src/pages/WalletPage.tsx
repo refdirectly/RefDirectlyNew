@@ -49,7 +49,10 @@ const WalletPage: React.FC = () => {
   };
 
   const handleAddFunds = async () => {
-    if (!amount || parseFloat(amount) <= 0) return;
+    if (!amount || parseFloat(amount) <= 0) {
+      alert('Please enter a valid amount');
+      return;
+    }
     
     setProcessing(true);
     try {
@@ -60,25 +63,36 @@ const WalletPage: React.FC = () => {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ amount: parseFloat(amount), paymentId: 'demo_' + Date.now() })
+        body: JSON.stringify({ amount: parseFloat(amount), paymentId: 'razorpay_' + Date.now() })
       });
       
       const data = await response.json();
       if (data.success) {
-        setWallet(prev => prev ? { ...prev, ...data.wallet } : null);
+        await fetchWallet();
         setShowAddFunds(false);
         setAmount('');
-        fetchWallet();
+        alert(`✅ Successfully added ₹${parseFloat(amount).toLocaleString()} to your wallet!`);
+      } else {
+        alert(data.message || 'Failed to add funds');
       }
     } catch (error) {
       console.error('Add funds error:', error);
+      alert('Failed to add funds. Please try again.');
     } finally {
       setProcessing(false);
     }
   };
 
   const handleWithdraw = async () => {
-    if (!amount || parseFloat(amount) <= 0) return;
+    if (!amount || parseFloat(amount) <= 0) {
+      alert('Please enter a valid amount');
+      return;
+    }
+
+    if (parseFloat(amount) > (wallet?.freeBalance || 0)) {
+      alert('Insufficient free balance');
+      return;
+    }
     
     setProcessing(true);
     try {
@@ -94,16 +108,16 @@ const WalletPage: React.FC = () => {
       
       const data = await response.json();
       if (data.success) {
-        setWallet(prev => prev ? { ...prev, ...data.wallet } : null);
+        await fetchWallet();
         setShowWithdraw(false);
         setAmount('');
-        alert(data.message);
-        fetchWallet();
+        alert(`✅ Successfully withdrawn ₹${parseFloat(amount).toLocaleString()} from your wallet!`);
       } else {
-        alert(data.message);
+        alert(data.message || 'Withdrawal failed');
       }
     } catch (error) {
       console.error('Withdraw error:', error);
+      alert('Withdrawal failed. Please try again.');
     } finally {
       setProcessing(false);
     }

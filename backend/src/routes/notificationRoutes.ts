@@ -1,12 +1,12 @@
 import express from 'express';
-import { authenticateToken } from '../middleware/auth';
+import { authenticate } from '../middleware/auth';
 import * as notificationController from '../controllers/notificationController';
 
 const router = express.Router();
 
-router.get('/', authenticateToken, notificationController.getNotifications);
-router.get('/unread-count', authenticateToken, notificationController.getUnreadCount);
-router.patch('/:id/read', authenticateToken, notificationController.markAsRead);
-router.patch('/mark-all-read', authenticateToken, notificationController.markAllAsRead);
+router.get('/', authenticate, notificationController.getNotifications);
+router.get('/unread-count', authenticate, notificationController.getUnreadCount);
+router.patch('/:id/read', authenticate, notificationController.markAsRead);
+router.patch('/mark-all-read', authenticate, notificationController.markAllAsRead);
 
 export default router;

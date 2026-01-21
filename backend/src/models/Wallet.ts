@@ -4,8 +4,8 @@ export interface ITransaction {
   type: 'ADD' | 'WITHDRAW' | 'LOCK' | 'UNLOCK' | 'RELEASE' | 'REFUND';
   amount: number;
   description: string;
-  referralId?: string;
-  escrowId?: string;
+  referralId?: mongoose.Types.ObjectId;
+  escrowId?: mongoose.Types.ObjectId;
   status: 'PENDING' | 'COMPLETED' | 'FAILED';
   createdAt: Date;
 }
