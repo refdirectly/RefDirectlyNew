@@ -225,18 +225,18 @@ const ReferrerRequestsPage: React.FC = () => {
                         </div>
                       )}
 
-                      <div className="flex gap-2 mt-4">
+                      <div className="flex flex-col sm:flex-row gap-2 mt-4">
                         {request.status === 'pending' && (
                           <>
                             <button 
                               onClick={() => handleAccept(request._id)}
-                              className="flex-1 bg-gradient-primary text-white py-3 px-6 rounded-xl font-semibold hover:shadow-lg transition-all duration-200 hover:scale-105"
+                              className="flex-1 bg-gradient-primary text-white py-3 px-4 sm:px-6 rounded-xl font-semibold hover:shadow-lg transition-all duration-200 hover:scale-105 text-sm sm:text-base"
                             >
                               Accept & Refer
                             </button>
                             <button 
                               onClick={() => referralsApi.updateStatus(request._id, 'rejected').then(fetchReferrals)}
-                              className="px-6 py-3 border-2 border-red-200 text-red-600 rounded-xl font-semibold hover:bg-red-50 transition-colors"
+                              className="px-4 sm:px-6 py-3 border-2 border-red-200 text-red-600 rounded-xl font-semibold hover:bg-red-50 transition-colors text-sm sm:text-base"
                             >
                               Decline
                             </button>
@@ -246,13 +246,13 @@ const ReferrerRequestsPage: React.FC = () => {
                           <>
                             <button 
                               onClick={() => navigate(`/chat?room=${request.chatRoomId || request._id}`)}
-                              className="flex-1 bg-gradient-primary text-white py-3 px-6 rounded-xl font-semibold hover:shadow-lg transition-all"
+                              className="flex-1 bg-gradient-primary text-white py-3 px-4 sm:px-6 rounded-xl font-semibold hover:shadow-lg transition-all text-sm sm:text-base"
                             >
                               💬 Open Chat
                             </button>
                             <button 
                               onClick={() => referralsApi.updateStatus(request._id, 'completed').then(fetchReferrals)}
-                              className="px-6 py-3 bg-green-600 text-white rounded-xl font-semibold hover:shadow-lg transition-all"
+                              className="flex-1 sm:flex-none px-4 sm:px-6 py-3 bg-green-600 text-white rounded-xl font-semibold hover:shadow-lg transition-all text-sm sm:text-base whitespace-nowrap"
                             >
                               Mark Complete
                             </button>
@@ -263,7 +263,7 @@ const ReferrerRequestsPage: React.FC = () => {
                             href={request.resumeUrl} 
                             target="_blank" 
                             rel="noopener noreferrer"
-                            className="px-6 py-3 border-2 border-gray-300 text-gray-700 rounded-xl font-semibold hover:bg-gray-50 transition-colors"
+                            className="px-4 sm:px-6 py-3 border-2 border-gray-300 text-gray-700 rounded-xl font-semibold hover:bg-gray-50 transition-colors text-center text-sm sm:text-base"
                           >
                             View Resume
                           </a>

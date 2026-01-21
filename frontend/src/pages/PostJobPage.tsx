@@ -128,11 +128,11 @@ const PostJobPage: React.FC = () => {
                 <Sparkles className="h-4 w-4" />
                 <span className="text-sm font-semibold">Organization Portal</span>
               </div>
-              <h1 className="font-display text-5xl font-bold text-gray-900 mb-4">Post a Job Opening</h1>
-              <p className="text-xl text-gray-600 max-w-2xl mx-auto">Reach thousands of qualified candidates and leverage our referral network</p>
+              <h1 className="font-display text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-900 mb-4">Post a Job Opening</h1>
+              <p className="text-base sm:text-lg lg:text-xl text-gray-600 max-w-2xl mx-auto">Reach thousands of qualified candidates and leverage our referral network</p>
             </motion.div>
 
-            <div className="grid md:grid-cols-3 gap-6 mb-12">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6 mb-8 sm:mb-12">
               {[
                 { icon: Users, title: '10,000+ Candidates', desc: 'Access our talent pool' },
                 { icon: Briefcase, title: 'Referral Network', desc: 'Get quality referrals' },
@@ -159,13 +159,13 @@ const PostJobPage: React.FC = () => {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.4 }}
               onSubmit={handleSubmit}
-              className="bg-white rounded-3xl shadow-2xl p-8 md:p-12 space-y-8 border-2 border-gray-100"
+              className="bg-white rounded-2xl sm:rounded-3xl shadow-2xl p-4 sm:p-6 lg:p-8 xl:p-12 space-y-6 sm:space-y-8 border-2 border-gray-100"
             >
               <div className="border-l-4 border-brand-purple pl-6 mb-8">
-                <h2 className="text-2xl font-bold text-gray-900 mb-2">Job Details</h2>
+                <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-2">Job Details</h2>
                 <p className="text-gray-600">Provide information about the position you're hiring for</p>
               </div>
-              <div className="grid md:grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
                 <div>
                   <label className="flex items-center gap-2 text-sm font-semibold text-gray-700 mb-3">
                     <Building2 className="h-4 w-4 text-brand-purple" />
@@ -176,7 +176,7 @@ const PostJobPage: React.FC = () => {
                     required
                     value={formData.organizationName}
                     onChange={(e) => setFormData({ ...formData, organizationName: e.target.value })}
-                    className="w-full px-4 py-4 border-2 border-gray-200 rounded-xl focus:border-brand-purple focus:outline-none transition-all text-gray-900 font-medium"
+                    className="w-full px-3 sm:px-4 py-3 sm:py-4 border-2 border-gray-200 rounded-xl focus:border-brand-purple focus:outline-none transition-all text-gray-900 font-medium"
                     placeholder="e.g. Tech Innovations Inc."
                   />
                 </div>
@@ -190,7 +190,7 @@ const PostJobPage: React.FC = () => {
                     required
                     value={formData.company}
                     onChange={(e) => setFormData({ ...formData, company: e.target.value })}
-                    className="w-full px-4 py-4 border-2 border-gray-200 rounded-xl focus:border-brand-purple focus:outline-none transition-all text-gray-900 font-medium"
+                    className="w-full px-3 sm:px-4 py-3 sm:py-4 border-2 border-gray-200 rounded-xl focus:border-brand-purple focus:outline-none transition-all text-gray-900 font-medium"
                     placeholder="e.g. Tech Innovations"
                   />
                 </div>
@@ -206,7 +206,7 @@ const PostJobPage: React.FC = () => {
                   required
                   value={formData.title}
                   onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                  className="w-full px-4 py-4 border-2 border-gray-200 rounded-xl focus:border-brand-purple focus:outline-none transition-all text-gray-900 font-medium text-lg"
+                  className="w-full px-3 sm:px-4 py-3 sm:py-4 border-2 border-gray-200 rounded-xl focus:border-brand-purple focus:outline-none transition-all text-gray-900 font-medium text-lg"
                   placeholder="e.g. Senior Software Engineer"
                 />
               </div>
@@ -222,7 +222,7 @@ const PostJobPage: React.FC = () => {
                     required
                     value={formData.location}
                     onChange={(e) => setFormData({ ...formData, location: e.target.value })}
-                    className="w-full px-4 py-4 border-2 border-gray-200 rounded-xl focus:border-brand-purple focus:outline-none transition-all text-gray-900 font-medium"
+                    className="w-full px-3 sm:px-4 py-3 sm:py-4 border-2 border-gray-200 rounded-xl focus:border-brand-purple focus:outline-none transition-all text-gray-900 font-medium"
                     placeholder="e.g. Bangalore, India"
                   />
                 </div>
@@ -234,7 +234,7 @@ const PostJobPage: React.FC = () => {
                   <select
                     value={formData.type}
                     onChange={(e) => setFormData({ ...formData, type: e.target.value })}
-                    className="w-full px-4 py-4 border-2 border-gray-200 rounded-xl focus:border-brand-purple focus:outline-none transition-all text-gray-900 font-medium"
+                    className="w-full px-3 sm:px-4 py-3 sm:py-4 border-2 border-gray-200 rounded-xl focus:border-brand-purple focus:outline-none transition-all text-gray-900 font-medium"
                     aria-label="Select job type"
                   >
                     <option>Full-time</option>
@@ -253,7 +253,7 @@ const PostJobPage: React.FC = () => {
                     type="text"
                     value={formData.salary}
                     onChange={(e) => setFormData({ ...formData, salary: e.target.value })}
-                    className="w-full px-4 py-4 border-2 border-gray-200 rounded-xl focus:border-brand-purple focus:outline-none transition-all text-gray-900 font-medium"
+                    className="w-full px-3 sm:px-4 py-3 sm:py-4 border-2 border-gray-200 rounded-xl focus:border-brand-purple focus:outline-none transition-all text-gray-900 font-medium"
                     placeholder="e.g. ₹10-15 LPA"
                   />
                 </div>
@@ -269,14 +269,14 @@ const PostJobPage: React.FC = () => {
                   rows={8}
                   value={formData.description}
                   onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                  className="w-full px-4 py-4 border-2 border-gray-200 rounded-xl focus:border-brand-purple focus:outline-none transition-all text-gray-900 leading-relaxed"
+                  className="w-full px-3 sm:px-4 py-3 sm:py-4 border-2 border-gray-200 rounded-xl focus:border-brand-purple focus:outline-none transition-all text-gray-900 leading-relaxed"
                   placeholder="Describe the role, key responsibilities, team structure, and what makes this opportunity unique..."
                 />
                 <p className="text-sm text-gray-500 mt-2">Be detailed to attract the right candidates</p>
               </div>
 
-              <div className="bg-gray-50 rounded-2xl p-6 border-2 border-gray-200">
-                <div className="flex items-center justify-between mb-4">
+              <div className="bg-gray-50 rounded-xl sm:rounded-2xl p-4 sm:p-6 border-2 border-gray-200">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-4 gap-3">
                   <label className="flex items-center gap-2 text-sm font-semibold text-gray-700">
                     <CheckCircle className="h-4 w-4 text-brand-purple" />
                     Requirements & Qualifications
@@ -292,7 +292,7 @@ const PostJobPage: React.FC = () => {
                 </div>
                 <div className="space-y-3">
                   {requirements.map((req, index) => (
-                    <div key={index} className="flex gap-3">
+                    <div key={index} className="flex flex-col sm:flex-row gap-2 sm:gap-3">
                       <div className="flex-shrink-0 h-10 w-10 rounded-lg bg-brand-purple/10 flex items-center justify-center mt-1">
                         <span className="text-brand-purple font-bold text-sm">{index + 1}</span>
                       </div>
@@ -318,22 +318,22 @@ const PostJobPage: React.FC = () => {
                 </div>
               </div>
 
-              <div className="bg-gradient-to-br from-purple-50 to-pink-50 rounded-2xl p-6 border-2 border-purple-200">
+              <div className="bg-gradient-to-br from-purple-50 to-pink-50 rounded-xl sm:rounded-2xl p-4 sm:p-6 border-2 border-purple-200">
                 <label className="flex items-center gap-2 text-sm font-semibold text-gray-700 mb-3">
                   <DollarSign className="h-4 w-4 text-brand-purple" />
                   Referral Reward (₹)
                 </label>
-                <div className="flex items-center gap-4">
+                <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4">
                   <input
                     type="number"
                     required
                     min="0"
                     value={formData.referralReward}
                     onChange={(e) => setFormData({ ...formData, referralReward: e.target.value })}
-                    className="w-full px-6 py-4 border-2 border-purple-300 rounded-xl focus:border-brand-purple focus:outline-none transition-all text-gray-900 font-bold text-2xl"
+                    className="w-full px-4 sm:px-6 py-3 sm:py-4 border-2 border-purple-300 rounded-xl focus:border-brand-purple focus:outline-none transition-all text-gray-900 font-bold text-2xl"
                     placeholder="99"
                   />
-                  <div className="flex gap-2">
+                  <div className="flex gap-2 w-full sm:w-auto">
                     {[99, 199, 499].map(amt => (
                       <button
                         key={amt}
@@ -356,7 +356,7 @@ const PostJobPage: React.FC = () => {
                 <button
                   type="submit"
                   disabled={loading}
-                  className="w-full bg-gradient-primary text-white py-5 rounded-xl font-bold text-lg hover:shadow-2xl transition-all disabled:opacity-50 hover:scale-105 flex items-center justify-center gap-2"
+                  className="w-full bg-gradient-primary text-white py-4 sm:py-5 rounded-xl font-bold text-base sm:text-lg hover:shadow-2xl transition-all disabled:opacity-50 hover:scale-105 flex items-center justify-center gap-2"
                 >
                   {loading ? (
                     <>
