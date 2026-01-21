@@ -306,6 +306,7 @@ const ReferrerEarningsPage: React.FC = () => {
                     </p>
                   </div>
                 ) : (
+                  <>
                   <div className="hidden md:block overflow-x-auto">
                     <table className="w-full min-w-[600px]">
                       <thead>
@@ -393,6 +394,7 @@ const ReferrerEarningsPage: React.FC = () => {
                       </div>
                     ))}
                   </div>
+                  </>
                 )}
               </motion.div>
             </div>
