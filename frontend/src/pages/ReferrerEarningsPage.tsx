@@ -208,31 +208,31 @@ const ReferrerEarningsPage: React.FC = () => {
       <Header />
       <main className="flex-grow pt-32 md:pt-40 pb-12">
         <div className="container mx-auto px-4">
-          <div className="flex justify-between items-center mb-8">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 sm:mb-8 gap-4">
             <div>
-              <h1 className="font-display text-4xl font-bold text-gray-900 mb-2">
+              <h1 className="font-display text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-900 mb-2">
                 Earnings
               </h1>
-              <p className="text-gray-600">Track your referral income and payment history</p>
+              <p className="text-sm sm:text-base text-gray-600">Track your referral income and payment history</p>
             </div>
             <button 
               onClick={exportToCSV}
               disabled={transactions.length === 0}
-              className="flex items-center gap-2 bg-gradient-primary text-white px-6 py-3 rounded-xl font-semibold hover:shadow-lg transition-all duration-200 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
+              className="flex items-center gap-2 bg-gradient-primary text-white px-4 py-2 sm:px-6 sm:py-3 rounded-xl text-sm sm:text-base font-semibold hover:shadow-lg transition-all duration-200 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
             >
               <Download className="h-5 w-5" />
               Export CSV
             </button>
           </div>
 
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-8 sm:mb-12">
             {stats.map((stat, index) => (
               <motion.div
                 key={index}
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.4, delay: index * 0.1 }}
-                className="bg-white rounded-2xl p-6 shadow-lg border-2 border-gray-100 hover:shadow-xl transition-shadow"
+                className="bg-white rounded-xl sm:rounded-2xl p-4 sm:p-6 shadow-lg border-2 border-gray-100 hover:shadow-xl transition-shadow"
               >
                 <div className="flex items-center justify-between mb-4">
                   <div className={`h-12 w-12 rounded-xl ${stat.bg} flex items-center justify-center`}>
@@ -249,24 +249,24 @@ const ReferrerEarningsPage: React.FC = () => {
                     </div>
                   )}
                 </div>
-                <h3 className="text-3xl font-bold text-gray-900 mb-1">{stat.value}</h3>
+                <h3 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-1">{stat.value}</h3>
                 <p className="text-sm text-gray-600">{stat.label}</p>
                 <p className="text-xs text-gray-500 mt-2">{stat.change}</p>
               </motion.div>
             ))}
           </div>
 
-          <div className="grid lg:grid-cols-3 gap-8 mb-12">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 sm:gap-8 mb-8 sm:mb-12">
             <div className="lg:col-span-2">
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5 }}
-                className="bg-white rounded-2xl p-8 shadow-lg"
+                className="bg-white rounded-xl sm:rounded-2xl p-4 sm:p-6 lg:p-8 shadow-lg"
               >
                 <div className="flex items-center justify-between mb-6">
-                  <h2 className="font-display text-2xl font-bold text-gray-900">Transaction History</h2>
-                  <div className="flex items-center gap-3">
+                  <h2 className="font-display text-xl sm:text-2xl font-bold text-gray-900">Transaction History</h2>
+                  <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-3 w-full sm:w-auto">
                     <div className="relative">
                       <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
                       <input
@@ -274,13 +274,13 @@ const ReferrerEarningsPage: React.FC = () => {
                         placeholder="Search..."
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
-                        className="pl-10 pr-4 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-purple"
+                        className="w-full sm:w-auto pl-10 pr-4 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-purple"
                       />
                     </div>
                     <select
                       value={filter}
                       onChange={(e) => setFilter(e.target.value as any)}
-                      className="px-4 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-purple"
+                      className="w-full sm:w-auto px-4 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-purple"
                     >
                       <option value="all">All Types</option>
                       <option value="earning">Earnings</option>
@@ -306,8 +306,8 @@ const ReferrerEarningsPage: React.FC = () => {
                     </p>
                   </div>
                 ) : (
-                  <div className="overflow-x-auto">
-                    <table className="w-full">
+                  <div className="hidden md:block overflow-x-auto">
+                    <table className="w-full min-w-[600px]">
                       <thead>
                         <tr className="border-b-2 border-gray-100">
                           <th className="text-left py-3 px-4 text-sm font-semibold text-gray-600">Description</th>
@@ -321,7 +321,7 @@ const ReferrerEarningsPage: React.FC = () => {
                         {filteredTransactions.map((transaction) => (
                           <tr key={transaction._id} className="border-b border-gray-100 hover:bg-gray-50 transition-colors">
                             <td className="py-4 px-4">
-                              <p className="font-semibold text-gray-900">{transaction.description}</p>
+                              <p className="font-semibold text-gray-900 text-sm">{transaction.description}</p>
                               {transaction.role && (
                                 <p className="text-xs text-gray-500 mt-1">{transaction.role}</p>
                               )}
@@ -330,7 +330,7 @@ const ReferrerEarningsPage: React.FC = () => {
                               <p className="text-sm text-gray-700">{transaction.company || '-'}</p>
                             </td>
                             <td className="py-4 px-4 text-right">
-                              <span className={`font-bold ${
+                              <span className={`font-bold text-sm ${
                                 transaction.type === 'earning' ? 'text-green-600' : 'text-red-600'
                               }`}>
                                 {transaction.type === 'earning' ? '+' : '-'}₹{transaction.amount.toLocaleString('en-IN')}
@@ -345,7 +345,7 @@ const ReferrerEarningsPage: React.FC = () => {
                                 {transaction.status}
                               </span>
                             </td>
-                            <td className="py-4 px-4 text-right text-sm text-gray-600">
+                            <td className="py-4 px-4 text-right text-xs text-gray-600">
                               {new Date(transaction.createdAt).toLocaleDateString('en-IN', {
                                 day: 'numeric',
                                 month: 'short',
@@ -357,6 +357,42 @@ const ReferrerEarningsPage: React.FC = () => {
                       </tbody>
                     </table>
                   </div>
+                  <div className="md:hidden space-y-3">
+                    {filteredTransactions.map((transaction) => (
+                      <div key={transaction._id} className="bg-gray-50 rounded-xl p-4 border border-gray-200">
+                        <div className="flex justify-between items-start mb-3">
+                          <div className="flex-1 pr-3">
+                            <p className="font-semibold text-gray-900 text-sm mb-1">{transaction.description}</p>
+                            {transaction.role && (
+                              <p className="text-xs text-gray-500 mb-1">{transaction.role}</p>
+                            )}
+                            <p className="text-xs text-gray-600">{transaction.company || '-'}</p>
+                          </div>
+                          <span className={`font-bold text-lg flex-shrink-0 ${
+                            transaction.type === 'earning' ? 'text-green-600' : 'text-red-600'
+                          }`}>
+                            {transaction.type === 'earning' ? '+' : '-'}₹{transaction.amount.toLocaleString('en-IN')}
+                          </span>
+                        </div>
+                        <div className="flex justify-between items-center">
+                          <span className={`inline-block px-3 py-1 rounded-full text-xs font-semibold capitalize ${
+                            transaction.status === 'completed' ? 'bg-green-100 text-green-700' :
+                            transaction.status === 'pending' ? 'bg-yellow-100 text-yellow-700' :
+                            'bg-blue-100 text-blue-700'
+                          }`}>
+                            {transaction.status}
+                          </span>
+                          <span className="text-xs text-gray-500">
+                            {new Date(transaction.createdAt).toLocaleDateString('en-IN', {
+                              day: 'numeric',
+                              month: 'short',
+                              year: 'numeric'
+                            })}
+                          </span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
                 )}
               </motion.div>
             </div>
@@ -366,25 +402,25 @@ const ReferrerEarningsPage: React.FC = () => {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5, delay: 0.2 }}
-                className="bg-white rounded-2xl p-6 shadow-lg mb-6"
+                className="bg-white rounded-xl sm:rounded-2xl p-4 sm:p-6 shadow-lg mb-6"
               >
-                <h3 className="font-display text-lg font-bold text-gray-900 mb-4">Wallet Summary</h3>
+                <h3 className="font-display text-base sm:text-lg font-bold text-gray-900 mb-4">Wallet Summary</h3>
                 <div className="space-y-4">
                   <div className="flex justify-between items-center p-4 bg-green-50 rounded-xl">
-                    <span className="text-sm font-medium text-gray-700">Available Balance</span>
-                    <span className="text-xl font-bold text-green-600">₹{wallet.availableBalance.toLocaleString('en-IN')}</span>
+                    <span className="text-xs sm:text-sm font-medium text-gray-700">Available Balance</span>
+                    <span className="text-lg sm:text-xl font-bold text-green-600">₹{wallet.availableBalance.toLocaleString('en-IN')}</span>
                   </div>
                   <div className="flex justify-between items-center p-4 bg-yellow-50 rounded-xl">
-                    <span className="text-sm font-medium text-gray-700">Pending</span>
-                    <span className="text-xl font-bold text-yellow-600">₹{wallet.heldBalance.toLocaleString('en-IN')}</span>
+                    <span className="text-xs sm:text-sm font-medium text-gray-700">Pending</span>
+                    <span className="text-lg sm:text-xl font-bold text-yellow-600">₹{wallet.heldBalance.toLocaleString('en-IN')}</span>
                   </div>
                   <div className="flex justify-between items-center p-4 bg-purple-50 rounded-xl">
-                    <span className="text-sm font-medium text-gray-700">Total Earned</span>
-                    <span className="text-xl font-bold text-purple-600">₹{wallet.totalEarned.toLocaleString('en-IN')}</span>
+                    <span className="text-xs sm:text-sm font-medium text-gray-700">Total Earned</span>
+                    <span className="text-lg sm:text-xl font-bold text-purple-600">₹{wallet.totalEarned.toLocaleString('en-IN')}</span>
                   </div>
                   <div className="flex justify-between items-center p-4 bg-blue-50 rounded-xl">
-                    <span className="text-sm font-medium text-gray-700">Withdrawn</span>
-                    <span className="text-xl font-bold text-blue-600">₹{wallet.totalWithdrawn.toLocaleString('en-IN')}</span>
+                    <span className="text-xs sm:text-sm font-medium text-gray-700">Withdrawn</span>
+                    <span className="text-lg sm:text-xl font-bold text-blue-600">₹{wallet.totalWithdrawn.toLocaleString('en-IN')}</span>
                   </div>
                   <button
                     onClick={() => navigate('/referrer/wallet')}
@@ -399,19 +435,19 @@ const ReferrerEarningsPage: React.FC = () => {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5, delay: 0.3 }}
-                className="bg-gradient-to-br from-brand-purple via-brand-magenta to-brand-teal rounded-2xl p-6 text-white shadow-lg"
+                className="bg-gradient-to-br from-brand-purple via-brand-magenta to-brand-teal rounded-xl sm:rounded-2xl p-4 sm:p-6 text-white shadow-lg"
               >
                 <TrendingUp className="h-10 w-10 mb-4" />
-                <h3 className="font-display text-xl font-bold mb-2">Earnings Stats</h3>
-                <p className="text-3xl font-bold mb-2">₹{wallet.totalEarned.toLocaleString('en-IN')}</p>
+                <h3 className="font-display text-lg sm:text-xl font-bold mb-2">Earnings Stats</h3>
+                <p className="text-2xl sm:text-3xl font-bold mb-2">₹{wallet.totalEarned.toLocaleString('en-IN')}</p>
                 <p className="text-sm opacity-90 mb-4">Total lifetime earnings</p>
                 <div className="bg-white/20 backdrop-blur-sm rounded-xl p-3 mb-3">
                   <p className="text-xs opacity-80 mb-1">Completed Referrals</p>
-                  <p className="text-lg font-bold">{transactions.filter(t => t.type === 'earning').length}</p>
+                  <p className="text-base sm:text-lg font-bold">{transactions.filter(t => t.type === 'earning').length}</p>
                 </div>
                 <div className="bg-white/20 backdrop-blur-sm rounded-xl p-3">
                   <p className="text-xs opacity-80 mb-1">Avg. per Referral</p>
-                  <p className="text-lg font-bold">₹{transactions.length > 0 ? Math.round(wallet.totalEarned / transactions.filter(t => t.type === 'earning').length).toLocaleString('en-IN') : 0}</p>
+                  <p className="text-base sm:text-lg font-bold">₹{transactions.length > 0 ? Math.round(wallet.totalEarned / transactions.filter(t => t.type === 'earning').length).toLocaleString('en-IN') : 0}</p>
                 </div>
               </motion.div>
             </div>

@@ -148,12 +148,12 @@ const ReferrerWalletPage: React.FC = () => {
             >
               <div className="flex items-center justify-between">
                 <div>
-                  <h1 className="font-display text-4xl md:text-5xl font-bold text-gray-900 mb-2">Earnings Wallet</h1>
-                  <p className="text-lg text-gray-600">Track your referral earnings and payouts</p>
+                  <h1 className="font-display text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-900 mb-2">Earnings Wallet</h1>
+                  <p className="text-base sm:text-lg text-gray-600">Track your referral earnings and payouts</p>
                 </div>
                 <button
                   onClick={() => { fetchWallet(); fetchTransactions(); }}
-                  className="hidden md:flex items-center gap-2 px-6 py-3 bg-white border-2 border-gray-200 rounded-xl hover:border-brand-purple transition-all"
+                  className="flex items-center gap-2 px-6 py-3 bg-white border-2 border-gray-200 rounded-xl hover:border-brand-purple transition-all"
                 >
                   <RefreshCw className="h-5 w-5 text-gray-600" />
                   <span className="font-semibold text-gray-700">Refresh</span>
@@ -161,12 +161,12 @@ const ReferrerWalletPage: React.FC = () => {
               </div>
             </motion.div>
 
-            <div className="grid md:grid-cols-3 gap-6 mb-8">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 mb-6 sm:mb-8">
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.1 }}
-                className="relative overflow-hidden bg-gradient-to-br from-green-500 via-emerald-500 to-teal-500 text-white rounded-3xl p-8 shadow-2xl"
+                className="relative overflow-hidden bg-gradient-to-br from-green-500 via-emerald-500 to-teal-500 text-white rounded-2xl sm:rounded-3xl p-6 sm:p-8 shadow-2xl"
               >
                 <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -mr-16 -mt-16"></div>
                 <div className="absolute bottom-0 left-0 w-24 h-24 bg-white/10 rounded-full -ml-12 -mb-12"></div>
@@ -185,7 +185,7 @@ const ReferrerWalletPage: React.FC = () => {
                     </button>
                   </div>
                   <p className="text-white/80 text-sm font-medium mb-2">Available Balance</p>
-                  <p className="text-4xl font-bold mb-1">₹{wallet?.availableBalance || 0}</p>
+                  <p className="text-3xl sm:text-4xl font-bold mb-1">₹{wallet?.availableBalance || 0}</p>
                   <p className="text-white/60 text-xs">Ready to withdraw</p>
                 </div>
               </motion.div>
@@ -194,13 +194,13 @@ const ReferrerWalletPage: React.FC = () => {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.2 }}
-                className="bg-white rounded-3xl p-8 shadow-lg border-2 border-gray-100 hover:border-blue-200 transition-all"
+                className="bg-white rounded-2xl sm:rounded-3xl p-6 sm:p-8 shadow-lg border-2 border-gray-100 hover:border-blue-200 transition-all"
               >
                 <div className="h-12 w-12 rounded-xl bg-blue-100 flex items-center justify-center mb-6">
                   <Clock className="h-6 w-6 text-blue-600" />
                 </div>
                 <p className="text-gray-600 text-sm font-medium mb-2">Pending Earnings</p>
-                <p className="text-4xl font-bold text-gray-900 mb-1">₹{wallet?.heldBalance || 0}</p>
+                <p className="text-3xl sm:text-4xl font-bold text-gray-900 mb-1">₹{wallet?.heldBalance || 0}</p>
                 <p className="text-gray-500 text-xs">In progress referrals</p>
               </motion.div>
 
@@ -208,18 +208,18 @@ const ReferrerWalletPage: React.FC = () => {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.3 }}
-                className="bg-white rounded-3xl p-8 shadow-lg border-2 border-gray-100 hover:border-green-200 transition-all"
+                className="bg-white rounded-2xl sm:rounded-3xl p-6 sm:p-8 shadow-lg border-2 border-gray-100 hover:border-green-200 transition-all"
               >
                 <div className="h-12 w-12 rounded-xl bg-green-100 flex items-center justify-center mb-6">
                   <TrendingUp className="h-6 w-6 text-green-600" />
                 </div>
                 <p className="text-gray-600 text-sm font-medium mb-2">Total Earned</p>
-                <p className="text-4xl font-bold text-gray-900 mb-1">₹{wallet?.totalEarned || 0}</p>
+                <p className="text-3xl sm:text-4xl font-bold text-gray-900 mb-1">₹{wallet?.totalEarned || 0}</p>
                 <p className="text-gray-500 text-xs">Lifetime earnings</p>
               </motion.div>
             </div>
 
-            <div className="grid lg:grid-cols-3 gap-6 mb-8">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 mb-6 sm:mb-8">
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -273,7 +273,7 @@ const ReferrerWalletPage: React.FC = () => {
               className="bg-white rounded-3xl shadow-xl p-8 border-2 border-gray-100"
             >
               <div className="flex items-center justify-between mb-6">
-                <h2 className="font-display text-3xl font-bold text-gray-900">Earnings History</h2>
+                <h2 className="font-display text-2xl sm:text-3xl font-bold text-gray-900">Earnings History</h2>
                 <span className="text-sm text-gray-500">{transactions.length} transactions</span>
               </div>
               <div className="space-y-3">
@@ -329,7 +329,7 @@ const ReferrerWalletPage: React.FC = () => {
           <motion.div
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
-            className="bg-white rounded-3xl p-8 max-w-md w-full shadow-2xl"
+            className="bg-white rounded-2xl sm:rounded-3xl p-6 sm:p-8 max-w-md w-full shadow-2xl"
           >
             <div className="text-center mb-6">
               <div className="inline-flex h-16 w-16 rounded-2xl bg-gradient-to-br from-green-500 to-emerald-500 items-center justify-center mb-4">

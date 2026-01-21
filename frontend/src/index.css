@@ -5,9 +5,14 @@
 @layer base {
   html {
     @apply scroll-smooth;
+    overflow-x: hidden;
   }
   body {
     @apply overflow-x-hidden;
+    max-width: 100vw;
+  }
+  * {
+    box-sizing: border-box;
   }
 }
 
@@ -23,5 +28,6 @@
   }
   .container {
     @apply px-4 sm:px-6 lg:px-8;
+    max-width: 100%;
   }
 }
