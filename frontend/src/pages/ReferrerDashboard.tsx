@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import { motion } from 'framer-motion';
-import { useNavigate } from 'react-router-dom';
-import { Bell, Users, CheckCircle, Clock, TrendingUp, LogOut, Wallet, DollarSign, Award, MessageCircle, Star, ArrowUpRight, Calendar } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { Bell, Users, CheckCircle, Clock, TrendingUp, LogOut, Wallet, DollarSign, Award, MessageCircle, Star, ArrowUpRight, Calendar, Sparkles, X } from 'lucide-react';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
 
@@ -20,15 +20,26 @@ const ReferrerDashboard: React.FC = () => {
   const [requests, setRequests] = useState<any[]>([]);
   const [recentActivity, setRecentActivity] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [showWelcome, setShowWelcome] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
 
   useEffect(() => {
     const userData = localStorage.getItem('user');
     if (userData) {
       setUser(JSON.parse(userData));
     }
+    
+    // Check if user just logged in
+    if (location.state?.welcomeBack) {
+      setShowWelcome(true);
+      setTimeout(() => setShowWelcome(false), 4000);
+      // Clear the state
+      window.history.replaceState({}, document.title);
+    }
+    
     fetchDashboardData();
-  }, []);
+  }, [location]);
 
   const fetchDashboardData = async () => {
     try {
@@ -102,6 +113,39 @@ const ReferrerDashboard: React.FC = () => {
   return (
     <div className="flex flex-col min-h-screen bg-gray-50">
       <Header />
+      
+      {/* Welcome Toast */}
+      <AnimatePresence>
+        {showWelcome && (
+          <motion.div
+            initial={{ opacity: 0, y: -100 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -100 }}
+            className="fixed top-24 left-1/2 -translate-x-1/2 z-50 max-w-md w-full mx-4"
+          >
+            <div className="bg-gradient-to-r from-brand-purple via-brand-magenta to-brand-teal rounded-2xl shadow-2xl p-6 text-white">
+              <div className="flex items-start justify-between">
+                <div className="flex items-start gap-4">
+                  <div className="h-12 w-12 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center flex-shrink-0">
+                    <Sparkles className="h-6 w-6" />
+                  </div>
+                  <div>
+                    <h3 className="font-bold text-lg mb-1">Welcome Back, {location.state?.userName || user?.name}! 🎉</h3>
+                    <p className="text-sm text-white/90">You're successfully logged in. Start earning with referrals!</p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setShowWelcome(false)}
+                  className="text-white/80 hover:text-white transition-colors"
+                >
+                  <X className="h-5 w-5" />
+                </button>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+      
       <main className="flex-grow pt-32 md:pt-40 pb-12">
         <div className="container mx-auto px-4">
           <div className="flex justify-between items-center mb-8">

@@ -284,7 +284,13 @@ export const login = async (req: Request, res: Response) => {
   }
 };
 
-export const googleAuth = passport.authenticate('google', { scope: ['profile', 'email'] });
+export const googleAuth = (req: any, res: any, next: any) => {
+  const role = req.query.role || 'seeker';
+  passport.authenticate('google', { 
+    scope: ['profile', 'email'],
+    state: role
+  })(req, res, next);
+};
 
 export const googleCallback = (req: Request, res: Response) => {
   const user = req.user as any;
@@ -296,7 +302,10 @@ export const googleCallback = (req: Request, res: Response) => {
   res.redirect(`${process.env.FRONTEND_URL}/auth/callback?token=${token}&user=${encodeURIComponent(JSON.stringify({ id: user._id, email: user.email, name: user.name, role: user.role }))}`);
 };
 
-export const linkedinAuth = passport.authenticate('linkedin');
+export const linkedinAuth = (req: any, res: any, next: any) => {
+  const role = req.query.role || 'seeker';
+  passport.authenticate('linkedin', { state: role })(req, res, next);
+};
 
 export const linkedinCallback = (req: Request, res: Response) => {
   const user = req.user as any;

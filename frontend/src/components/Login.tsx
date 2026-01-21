@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Link, useNavigate } from 'react-router-dom';
-import { AlertCircle, Loader2, Briefcase, TrendingUp, Users, CheckCircle, Eye, EyeOff } from 'lucide-react';
+import { AlertCircle, Loader2, Briefcase, TrendingUp, Users, CheckCircle, Eye, EyeOff, Sparkles } from 'lucide-react';
 import { validateEmail, validatePassword } from '../utils/validation';
 
 const Login: React.FC = () => {
@@ -9,6 +9,7 @@ const Login: React.FC = () => {
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [success, setSuccess] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [fieldErrors, setFieldErrors] = useState({ email: '', password: '' });
   const navigate = useNavigate();
@@ -16,6 +17,7 @@ const Login: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
+    setSuccess(false);
 
     // Validate fields
     const emailValidation = validateEmail(email);
@@ -44,12 +46,33 @@ const Login: React.FC = () => {
         throw new Error(data.message || 'Login failed');
       }
 
+      // Check if user is a referrer - prevent login
+      if (data.user.role === 'referrer') {
+        setError('This is the Job Seeker login page. Please use the Referrer login page to access your account.');
+        setLoading(false);
+        return;
+      }
+
+      // Only allow job seekers
+      if (data.user.role !== 'seeker') {
+        setError('Invalid account type. This login is for job seekers only.');
+        setLoading(false);
+        return;
+      }
+
       localStorage.setItem('token', data.token);
       localStorage.setItem('user', JSON.stringify(data.user));
-      navigate(data.user.role === 'referrer' ? '/referrer/dashboard' : '/seeker/dashboard');
+      localStorage.setItem('userId', data.user.id);
+      
+      setSuccess(true);
+      
+      setTimeout(() => {
+        navigate('/seeker/dashboard', {
+          state: { welcomeBack: true, userName: data.user.name }
+        });
+      }, 1000);
     } catch (err: any) {
       setError(err.message || 'An error occurred. Please try again.');
-    } finally {
       setLoading(false);
     }
   };
@@ -127,22 +150,50 @@ const Login: React.FC = () => {
                   <Briefcase className="h-8 w-8 text-white" />
                 </div>
                 <h2 className="font-display text-3xl font-bold text-gray-900 mb-2">
-                  Sign In
+                  Job Seeker Sign In
                 </h2>
                 <p className="text-gray-600">Access your job seeker dashboard</p>
               </div>
 
               <form onSubmit={handleSubmit} className="space-y-6">
-                {error && (
-                  <motion.div
-                    initial={{ opacity: 0, y: -10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className="bg-red-50 border border-red-200 rounded-lg p-4 flex items-start gap-3"
-                  >
-                    <AlertCircle className="h-5 w-5 text-red-600 flex-shrink-0 mt-0.5" />
-                    <p className="text-sm text-red-800">{error}</p>
-                  </motion.div>
-                )}
+                <AnimatePresence mode="wait">
+                  {error && (
+                    <motion.div
+                      initial={{ opacity: 0, y: -10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -10 }}
+                      className="bg-red-50 border-2 border-red-200 rounded-xl p-4 flex items-start gap-3"
+                    >
+                      <AlertCircle className="h-5 w-5 text-red-600 flex-shrink-0 mt-0.5" />
+                      <div className="flex-1">
+                        <p className="text-sm font-semibold text-red-800">{error}</p>
+                        {error.includes('Referrer') && (
+                          <Link 
+                            to="/referrer-login" 
+                            className="inline-flex items-center gap-1 text-xs text-red-700 hover:text-red-900 font-medium mt-2 underline"
+                          >
+                            <Users className="h-3 w-3" />
+                            Go to Referrer Login Page
+                          </Link>
+                        )}
+                      </div>
+                    </motion.div>
+                  )}
+                  {success && (
+                    <motion.div
+                      initial={{ opacity: 0, scale: 0.95 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      exit={{ opacity: 0, scale: 0.95 }}
+                      className="bg-green-50 border border-green-200 rounded-lg p-4 flex items-start gap-3"
+                    >
+                      <CheckCircle className="h-5 w-5 text-green-600 flex-shrink-0 mt-0.5" />
+                      <div>
+                        <p className="text-sm font-semibold text-green-800">Login Successful!</p>
+                        <p className="text-xs text-green-700 mt-0.5">Redirecting to your dashboard...</p>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
 
                 <div>
                   <label htmlFor="email" className="block text-sm font-semibold text-gray-700 mb-2">
@@ -230,11 +281,12 @@ const Login: React.FC = () => {
 
                 <button
                   type="submit"
-                  disabled={loading || !validateEmail(email).isValid || !validatePassword(password).isValid}
+                  disabled={loading || success || !validateEmail(email).isValid || !validatePassword(password).isValid}
                   className="w-full bg-gradient-primary text-white py-4 rounded-xl font-bold text-lg hover:shadow-xl transition-all duration-200 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                 >
                   {loading && <Loader2 className="h-5 w-5 animate-spin" />}
-                  {loading ? 'Signing in...' : 'Sign In'}
+                  {success && <Sparkles className="h-5 w-5" />}
+                  {success ? 'Success!' : loading ? 'Signing in...' : 'Sign In'}
                 </button>
 
                 <div className="relative my-6">
@@ -248,7 +300,7 @@ const Login: React.FC = () => {
 
                 <div className="grid grid-cols-2 gap-4">
                   <a
-                    href={`${import.meta.env.VITE_API_URL || 'http://localhost:3001'}/api/auth/google`}
+                    href={`${import.meta.env.VITE_API_URL || 'http://localhost:3001'}/api/auth/google?role=seeker`}
                     className="flex items-center justify-center gap-2 px-4 py-3 border-2 border-gray-200 rounded-xl hover:border-brand-purple hover:bg-gray-50 transition-all font-semibold text-gray-700 hover:shadow-md"
                   >
                     <svg className="h-5 w-5" viewBox="0 0 24 24">
@@ -260,7 +312,7 @@ const Login: React.FC = () => {
                     Google
                   </a>
                   <a
-                    href={`${import.meta.env.VITE_API_URL || 'http://localhost:3001'}/api/auth/linkedin`}
+                    href={`${import.meta.env.VITE_API_URL || 'http://localhost:3001'}/api/auth/linkedin?role=seeker`}
                     className="flex items-center justify-center gap-2 px-4 py-3 border-2 border-gray-200 rounded-xl hover:border-brand-purple hover:bg-gray-50 transition-all font-semibold text-gray-700 hover:shadow-md"
                   >
                     <svg className="h-5 w-5" fill="#0077B5" viewBox="0 0 24 24">
@@ -283,15 +335,19 @@ const Login: React.FC = () => {
                   <p className="text-sm text-gray-600">
                     Don't have an account?{' '}
                     <Link to="/auth/signup/seeker" className="font-semibold text-brand-purple hover:text-brand-magenta transition-colors">
-                      Sign up now
+                      Sign up as Job Seeker
                     </Link>
                   </p>
-                  <p className="text-sm text-gray-600">
-                    Are you a referrer?{' '}
-                    <Link to="/referrer-login" className="font-semibold text-brand-teal hover:text-brand-magenta transition-colors">
-                      Referrer login
+                  <div className="pt-3 border-t border-gray-200">
+                    <p className="text-sm text-gray-600 mb-2">Are you a referrer?</p>
+                    <Link 
+                      to="/referrer-login" 
+                      className="inline-flex items-center gap-2 px-6 py-2.5 bg-gradient-to-r from-brand-teal to-emerald-500 text-white rounded-lg font-semibold hover:shadow-lg transition-all hover:scale-105"
+                    >
+                      <Users className="h-4 w-4" />
+                      Go to Referrer Login
                     </Link>
-                  </p>
+                  </div>
                 </div>
               </form>
             </motion.div>
