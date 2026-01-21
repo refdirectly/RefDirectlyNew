@@ -1,178 +1,121 @@
-# Notification System Documentation
+# Real-Time Notification System
 
-## Overview
-Professional notification bell system with real-time updates using Socket.IO and REST API.
+## 🚀 Quick Start
 
-## Features
-- ✅ Real-time notifications via WebSocket
-- ✅ Unread count badge
-- ✅ Mark as read (individual & all)
-- ✅ Delete notifications
-- ✅ Notification types: referral, payment, message, application, system
-- ✅ Responsive dropdown UI
-- ✅ Auto-refresh on new notifications
-- ✅ Time formatting (e.g., "2m ago", "3h ago")
-- ✅ Click outside to close
-- ✅ Pagination support
+### Backend Setup
 
-## Backend Structure
-
-### Models
-- `Notification.ts` - MongoDB schema with userId, type, title, message, read status
-
-### Routes (`/api/notifications`)
-- `GET /` - Get paginated notifications
-- `GET /unread-count` - Get unread count
-- `PATCH /:notificationId/read` - Mark single as read
-- `PATCH /mark-all-read` - Mark all as read
-- `DELETE /:notificationId` - Delete notification
-
-### Services
-- `notificationService.ts` - Create and emit notifications
-- `notificationHelper.ts` - Helper functions for common notification scenarios
-
-### Socket Events
-- `join-notifications` - Join user's notification room
-- `leave-notifications` - Leave notification room
-- `notification` - Receive real-time notifications
-
-## Frontend Structure
-
-### Components
-- `NotificationBell.tsx` - Main notification bell component
-
-### Services
-- `notificationService.ts` - API calls for notifications
-
-## Usage Examples
-
-### Backend - Send Notification
-
-```typescript
-import { sendNotification } from './utils/notificationHelper';
-
-// Send custom notification
-await sendNotification(
-  userId,
-  'referral',
-  'New Referral',
-  'You have a new referral request',
-  '/referrals'
-);
-
-// Or use helper functions
-import { notifyPaymentReceived } from './utils/notificationHelper';
-await notifyPaymentReceived(userId, 100);
+1. **Install dependencies**
+```bash
+npm install socket.io jsonwebtoken
 ```
 
-### Frontend - Add to Header
+2. **Update server.ts**
+```typescript
+import { setupSocket } from './config/socket';
+import notificationRoutes from './routes/notificationRoutes';
 
+// Add routes
+app.use('/api/notifications', notificationRoutes);
+
+// Setup socket after creating HTTP server
+const httpServer = createServer(app);
+setupSocket(httpServer);
+
+httpServer.listen(PORT);
+```
+
+3. **Environment variables**
+```
+JWT_SECRET=your_secret_key
+FRONTEND_URL=http://localhost:3000
+```
+
+### Frontend Setup
+
+1. **Install dependencies**
+```bash
+npm install socket.io-client framer-motion lucide-react
+```
+
+2. **Add NotificationBell to Header**
 ```tsx
 import NotificationBell from './components/NotificationBell';
 
-function Header() {
-  return (
-    <header>
-      <nav>
-        {/* Other nav items */}
-        <NotificationBell />
-      </nav>
-    </header>
-  );
-}
+<Header>
+  <NotificationBell />
+</Header>
 ```
 
-## Environment Variables
+## 📡 Socket Events
 
-Add to `.env`:
-```
-VITE_API_URL=http://localhost:3001
-```
+### Server → Client
+- `new_notification` - New notification received
+- `unread_count` - Updated unread count
+- `broadcast_notification` - Admin broadcast
 
-## Database Indexes
-The Notification model includes optimized indexes:
-- `userId` + `createdAt` (compound)
-- `userId` (single)
-- `read` (single)
+### Client → Server
+- Auto-authenticated via JWT in handshake
 
-## Notification Types
+## 🔒 Security Features
 
-| Type | Icon | Use Case |
-|------|------|----------|
-| referral | 🤝 | New referral requests |
-| payment | 💰 | Payment received/sent |
-| message | 💬 | New chat messages |
-| application | 📄 | Application status updates |
-| system | 🔔 | System announcements |
+✅ JWT authentication on socket connection
+✅ Role-based room isolation
+✅ User-specific notification filtering
+✅ Database-level access control
 
-## API Response Format
+## 🎯 Usage Examples
 
-```json
-{
-  "notifications": [
-    {
-      "_id": "...",
-      "userId": "...",
-      "type": "payment",
-      "title": "Payment Received",
-      "message": "You received $100",
-      "read": false,
-      "link": "/wallet",
-      "createdAt": "2024-01-01T00:00:00.000Z"
-    }
-  ],
-  "unreadCount": 5
-}
-```
-
-## Integration Points
-
-### Referral System
+### Trigger notification from any backend service:
 ```typescript
-import { notifyNewReferral } from './utils/notificationHelper';
-await notifyNewReferral(seekerId, referrerName);
+import notificationService from './services/notificationService';
+
+await notificationService.create({
+  recipientUserId: userId,
+  recipientRole: 'seeker',
+  title: 'Application Submitted',
+  message: 'Your application has been received',
+  type: 'application',
+  entityId: applicationId
+});
 ```
 
-### Payment System
-```typescript
-import { notifyPaymentReceived } from './utils/notificationHelper';
-await notifyPaymentReceived(userId, amount);
-```
+## 📊 Database Indexes
 
-### Chat System
-```typescript
-import { notifyNewMessage } from './utils/notificationHelper';
-await notifyNewMessage(recipientId, senderName);
-```
+Optimized for fast queries:
+- `recipientUserId + isRead + createdAt`
+- Individual indexes on role, read status
 
-### Application System
-```typescript
-import { notifyApplicationUpdate } from './utils/notificationHelper';
-await notifyApplicationUpdate(userId, 'Accepted');
-```
+## 🔄 Fallback Strategy
 
-## Security
-- JWT authentication required for all endpoints
-- User can only access their own notifications
-- Socket rooms isolated per user
-- Rate limiting applied
+If socket disconnects:
+1. Auto-reconnect (5 attempts)
+2. REST polling every 30s
+3. Fetch on page focus
 
-## Performance
-- Pagination prevents large data loads
-- Indexes optimize queries
-- Socket.IO for efficient real-time updates
-- Lazy loading of notifications
+## 🎨 UI Features
 
-## Testing
+✅ LinkedIn-style dropdown
+✅ Unread badge count
+✅ Mark as read on click
+✅ Mark all as read
+✅ Real-time updates
+✅ Smooth animations
+✅ Mobile responsive
+✅ Click outside to close
 
-### Test Notification Creation
-```bash
-curl -X POST http://localhost:3001/api/notifications/test \
-  -H "Authorization: Bearer YOUR_TOKEN"
-```
+## 📈 Performance
 
-### Check Unread Count
-```bash
-curl http://localhost:3001/api/notifications/unread-count \
-  -H "Authorization: Bearer YOUR_TOKEN"
-```
+- Indexed queries < 10ms
+- Socket rooms for targeted delivery
+- Pagination support (20 per page)
+- Lazy loading on scroll
+
+## 🔧 Customization
+
+### Add new notification type:
+1. Update Notification model enum
+2. Add icon in `getIcon()` function
+3. Create trigger function in examples
+
+### Add sound notification:
+Place `notification.mp3` in `/public` folder

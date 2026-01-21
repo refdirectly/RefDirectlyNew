@@ -51,7 +51,7 @@ const AIJobSearchPage: React.FC = () => {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       const applications = await response.json();
-      const appliedIds = new Set(applications.map((app: any) => app.externalJobId).filter(Boolean));
+      const appliedIds = new Set<string>(applications.map((app: any) => app.externalJobId).filter(Boolean));
       setAppliedJobs(appliedIds);
     } catch (error) {
       console.error('Failed to load applied jobs:', error);

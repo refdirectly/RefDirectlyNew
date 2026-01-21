@@ -30,14 +30,14 @@ export const createReferral = async (req: AuthRequest, res: Response) => {
     // Notify referrer about new request
     if (referrerId) {
       const seeker = await User.findById(seekerId);
-      const referrer = await User.findById(referrerId);
-      if (referrer) {
-        await notificationService.sendNotification({
-          userId: referrerId,
-          type: 'new_referral_request',
-          title: 'New Referral Request',
-          message: `${seeker?.name || 'A job seeker'} requested a referral for ${company || 'Unknown Company'}`,
-          data: { referralId: referral._id.toString() }
+      if (seeker) {
+        await notificationService.create({
+          recipientUserId: referrerId,
+          recipientRole: 'referrer',
+          title: '🤝 New Referral Request',
+          message: `${seeker.name} requested a referral for ${role} at ${company} - Reward: ₹${reward || 99}`,
+          type: 'application',
+          entityId: referral._id.toString()
         });
       }
     }
@@ -208,31 +208,34 @@ export const updateReferralStatus = async (req: AuthRequest, res: Response) => {
     // Send notifications based on status
     if (status === 'accepted' && referral.seekerId) {
       const referrer = await User.findById(req.user?.userId);
-      await notificationService.sendNotification({
-        userId: (referral.seekerId as any)._id.toString(),
-        type: 'referral_accepted',
-        title: 'Referral Accepted!',
-        message: `${referrer?.name || 'A referrer'} accepted your referral request for ${referral.company}`,
-        data: { referralId: referral._id.toString() }
+      await notificationService.create({
+        recipientUserId: (referral.seekerId as any)._id.toString(),
+        recipientRole: 'seeker',
+        title: '🎉 Referral Accepted!',
+        message: `${referrer?.name || 'A referrer'} accepted your referral request for ${referral.role} at ${referral.company}`,
+        type: 'status_update',
+        entityId: referral._id.toString()
       });
     } else if (status === 'rejected' && referral.seekerId) {
-      await notificationService.sendNotification({
-        userId: (referral.seekerId as any)._id.toString(),
-        type: 'referral_rejected',
+      await notificationService.create({
+        recipientUserId: (referral.seekerId as any)._id.toString(),
+        recipientRole: 'seeker',
         title: 'Referral Declined',
-        message: `Your referral request for ${referral.company} - ${referral.role} was declined`,
-        data: { referralId: referral._id.toString() }
+        message: `Your referral request for ${referral.role} at ${referral.company} was declined`,
+        type: 'status_update',
+        entityId: referral._id.toString()
       });
     } else if (status === 'completed') {
       // Notify referrer about completion and payment
       if (referral.referrerId) {
         const seeker = await User.findById(referral.seekerId);
-        await notificationService.sendNotification({
-          userId: (referral.referrerId as any)._id.toString(),
-          type: 'referral_completed',
-          title: 'Referral Completed!',
-          message: `${seeker?.name || 'Job seeker'} completed the referral. Payment will be processed.`,
-          data: { referralId: referral._id.toString(), amount: 5000 }
+        await notificationService.create({
+          recipientUserId: (referral.referrerId as any)._id.toString(),
+          recipientRole: 'referrer',
+          title: '💰 Referral Completed!',
+          message: `${seeker?.name || 'Job seeker'} completed the referral for ${referral.role} at ${referral.company}. Payment will be processed.`,
+          type: 'status_update',
+          entityId: referral._id.toString()
         });
       }
     }

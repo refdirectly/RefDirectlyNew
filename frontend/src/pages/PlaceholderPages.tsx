@@ -815,7 +815,7 @@ const ApplicationModal: React.FC<{ job: any; onClose: () => void }> = ({ job, on
               <h2 className="text-2xl font-bold mb-2">Apply for {job.title}</h2>
               <p className="text-sm opacity-90">{job.dept || job.department} • {job.location} • {job.type}</p>
             </div>
-            <button onClick={onClose} className="text-white hover:bg-white/20 rounded-full p-2">
+            <button type="button" onClick={onClose} className="text-white hover:bg-white/20 rounded-full p-2" title="Close modal">
               <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
               </svg>
@@ -826,75 +826,75 @@ const ApplicationModal: React.FC<{ job: any; onClose: () => void }> = ({ job, on
         <form onSubmit={handleSubmit} className="p-6 space-y-4">
           <div className="grid md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-1">Full Name *</label>
-              <input type="text" value={formData.fullName} onChange={(e) => setFormData({...formData, fullName: e.target.value})} className="w-full px-4 py-2 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-purple" />
+              <label htmlFor="full-name" className="block text-sm font-semibold text-gray-700 mb-1">Full Name *</label>
+              <input id="full-name" type="text" value={formData.fullName} onChange={(e) => setFormData({...formData, fullName: e.target.value})} className="w-full px-4 py-2 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-purple" placeholder="John Doe" />
               {errors.fullName && <p className="text-red-500 text-xs mt-1">{errors.fullName}</p>}
             </div>
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-1">Email *</label>
-              <input type="email" value={formData.email} onChange={(e) => setFormData({...formData, email: e.target.value})} className="w-full px-4 py-2 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-purple" />
+              <label htmlFor="email" className="block text-sm font-semibold text-gray-700 mb-1">Email *</label>
+              <input id="email" type="email" value={formData.email} onChange={(e) => setFormData({...formData, email: e.target.value})} className="w-full px-4 py-2 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-purple" placeholder="john@example.com" />
               {errors.email && <p className="text-red-500 text-xs mt-1">{errors.email}</p>}
             </div>
           </div>
 
           <div className="grid md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-1">Phone *</label>
-              <input type="tel" value={formData.phone} onChange={(e) => setFormData({...formData, phone: e.target.value})} className="w-full px-4 py-2 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-purple" />
+              <label htmlFor="phone" className="block text-sm font-semibold text-gray-700 mb-1">Phone *</label>
+              <input id="phone" type="tel" value={formData.phone} onChange={(e) => setFormData({...formData, phone: e.target.value})} className="w-full px-4 py-2 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-purple" placeholder="+91 98765 43210" />
               {errors.phone && <p className="text-red-500 text-xs mt-1">{errors.phone}</p>}
             </div>
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-1">Years of Experience *</label>
-              <input type="number" value={formData.experience} onChange={(e) => setFormData({...formData, experience: e.target.value})} className="w-full px-4 py-2 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-purple" />
+              <label htmlFor="experience" className="block text-sm font-semibold text-gray-700 mb-1">Years of Experience *</label>
+              <input id="experience" type="number" value={formData.experience} onChange={(e) => setFormData({...formData, experience: e.target.value})} className="w-full px-4 py-2 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-purple" placeholder="5" />
               {errors.experience && <p className="text-red-500 text-xs mt-1">{errors.experience}</p>}
             </div>
           </div>
 
           <div className="grid md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-1">Current Company</label>
-              <input type="text" value={formData.currentCompany} onChange={(e) => setFormData({...formData, currentCompany: e.target.value})} className="w-full px-4 py-2 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-purple" />
+              <label htmlFor="current-company" className="block text-sm font-semibold text-gray-700 mb-1">Current Company</label>
+              <input id="current-company" type="text" value={formData.currentCompany} onChange={(e) => setFormData({...formData, currentCompany: e.target.value})} className="w-full px-4 py-2 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-purple" placeholder="Google" />
             </div>
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-1">Current Role</label>
-              <input type="text" value={formData.currentRole} onChange={(e) => setFormData({...formData, currentRole: e.target.value})} className="w-full px-4 py-2 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-purple" />
+              <label htmlFor="current-role" className="block text-sm font-semibold text-gray-700 mb-1">Current Role</label>
+              <input id="current-role" type="text" value={formData.currentRole} onChange={(e) => setFormData({...formData, currentRole: e.target.value})} className="w-full px-4 py-2 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-purple" placeholder="Software Engineer" />
             </div>
           </div>
 
           <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-1">LinkedIn URL</label>
-            <input type="url" value={formData.linkedinUrl} onChange={(e) => setFormData({...formData, linkedinUrl: e.target.value})} className="w-full px-4 py-2 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-purple" placeholder="https://linkedin.com/in/yourprofile" />
+            <label htmlFor="linkedin-url" className="block text-sm font-semibold text-gray-700 mb-1">LinkedIn URL</label>
+            <input id="linkedin-url" type="url" value={formData.linkedinUrl} onChange={(e) => setFormData({...formData, linkedinUrl: e.target.value})} className="w-full px-4 py-2 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-purple" placeholder="https://linkedin.com/in/yourprofile" />
           </div>
 
           <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-1">Resume URL (Google Drive/Dropbox)</label>
-            <input type="url" value={formData.resumeUrl} onChange={(e) => setFormData({...formData, resumeUrl: e.target.value})} className="w-full px-4 py-2 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-purple" placeholder="https://drive.google.com/..." />
+            <label htmlFor="resume-url" className="block text-sm font-semibold text-gray-700 mb-1">Resume URL (Google Drive/Dropbox)</label>
+            <input id="resume-url" type="url" value={formData.resumeUrl} onChange={(e) => setFormData({...formData, resumeUrl: e.target.value})} className="w-full px-4 py-2 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-purple" placeholder="https://drive.google.com/..." />
           </div>
 
           <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-1">Skills (comma-separated)</label>
-            <input type="text" value={formData.skills} onChange={(e) => setFormData({...formData, skills: e.target.value})} className="w-full px-4 py-2 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-purple" placeholder="React, Node.js, Python" />
+            <label htmlFor="skills" className="block text-sm font-semibold text-gray-700 mb-1">Skills (comma-separated)</label>
+            <input id="skills" type="text" value={formData.skills} onChange={(e) => setFormData({...formData, skills: e.target.value})} className="w-full px-4 py-2 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-purple" placeholder="React, Node.js, Python" />
           </div>
 
           <div className="grid md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-1">Expected Salary</label>
-              <input type="text" value={formData.expectedSalary} onChange={(e) => setFormData({...formData, expectedSalary: e.target.value})} className="w-full px-4 py-2 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-purple" placeholder="₹15-20 LPA" />
+              <label htmlFor="expected-salary" className="block text-sm font-semibold text-gray-700 mb-1">Expected Salary</label>
+              <input id="expected-salary" type="text" value={formData.expectedSalary} onChange={(e) => setFormData({...formData, expectedSalary: e.target.value})} className="w-full px-4 py-2 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-purple" placeholder="₹15-20 LPA" />
             </div>
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-1">Notice Period</label>
-              <input type="text" value={formData.noticePeriod} onChange={(e) => setFormData({...formData, noticePeriod: e.target.value})} className="w-full px-4 py-2 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-purple" placeholder="Immediate / 30 days" />
+              <label htmlFor="notice-period" className="block text-sm font-semibold text-gray-700 mb-1">Notice Period</label>
+              <input id="notice-period" type="text" value={formData.noticePeriod} onChange={(e) => setFormData({...formData, noticePeriod: e.target.value})} className="w-full px-4 py-2 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-purple" placeholder="Immediate / 30 days" />
             </div>
           </div>
 
           <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-1">Portfolio URL</label>
-            <input type="url" value={formData.portfolioUrl} onChange={(e) => setFormData({...formData, portfolioUrl: e.target.value})} className="w-full px-4 py-2 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-purple" placeholder="https://yourportfolio.com" />
+            <label htmlFor="portfolio-url" className="block text-sm font-semibold text-gray-700 mb-1">Portfolio URL</label>
+            <input id="portfolio-url" type="url" value={formData.portfolioUrl} onChange={(e) => setFormData({...formData, portfolioUrl: e.target.value})} className="w-full px-4 py-2 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-purple" placeholder="https://yourportfolio.com" />
           </div>
 
           <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-1">Cover Letter *</label>
-            <textarea value={formData.coverLetter} onChange={(e) => setFormData({...formData, coverLetter: e.target.value})} rows={6} className="w-full px-4 py-2 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-purple" placeholder="Tell us why you're a great fit for this role..."></textarea>
+            <label htmlFor="cover-letter" className="block text-sm font-semibold text-gray-700 mb-1">Cover Letter *</label>
+            <textarea id="cover-letter" value={formData.coverLetter} onChange={(e) => setFormData({...formData, coverLetter: e.target.value})} rows={6} className="w-full px-4 py-2 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-purple" placeholder="Tell us why you're a great fit for this role..."></textarea>
             {errors.coverLetter && <p className="text-red-500 text-xs mt-1">{errors.coverLetter}</p>}
           </div>
 

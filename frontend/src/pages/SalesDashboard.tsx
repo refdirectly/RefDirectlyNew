@@ -180,7 +180,9 @@ const SalesDashboard: React.FC = () => {
       <div className="bg-white p-4 rounded-lg shadow mb-6">
         <div className="flex flex-wrap gap-4 items-center justify-between">
           <div className="flex gap-4">
+            <label htmlFor="status-filter" className="sr-only">Filter by status</label>
             <select 
+              id="status-filter"
               className="px-4 py-2 border rounded-lg"
               value={filter.status}
               onChange={(e) => setFilter({...filter, status: e.target.value})}
@@ -193,7 +195,9 @@ const SalesDashboard: React.FC = () => {
               <option value="negotiation">Negotiation</option>
             </select>
             
+            <label htmlFor="priority-filter" className="sr-only">Filter by priority</label>
             <select 
+              id="priority-filter"
               className="px-4 py-2 border rounded-lg"
               value={filter.priority}
               onChange={(e) => setFilter({...filter, priority: e.target.value})}

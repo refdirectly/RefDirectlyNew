@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Menu, X, User, LogOut, LayoutDashboard, Wallet, Briefcase, FileText, ChevronDown, Bell, CheckCircle } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
+import NotificationBell from './NotificationBell';
 
 const Logo = () => (
   <Link to="/" className="flex items-center gap-2">
@@ -77,83 +78,10 @@ const Header: React.FC = () => {
   const [user, setUser] = useState<any>(null);
   const [showDropdown, setShowDropdown] = useState(false);
   const [showResumeDropdown, setShowResumeDropdown] = useState(false);
-  const [showNotifications, setShowNotifications] = useState(false);
-  const [notifications, setNotifications] = useState<any[]>([]);
-  const [unreadCount, setUnreadCount] = useState(0);
+
   const navigate = useNavigate();
 
-  useEffect(() => {
-    if (user) {
-      fetchNotifications();
-      const interval = setInterval(fetchNotifications, 30000);
-      return () => clearInterval(interval);
-    }
-  }, [user]);
 
-  const fetchNotifications = async () => {
-    try {
-      const token = localStorage.getItem('token');
-      const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
-      const response = await fetch(`${API_URL}/api/notifications`, {
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
-      const data = await response.json();
-      if (data.success) {
-        setNotifications(data.notifications);
-        setUnreadCount(data.unreadCount);
-      }
-    } catch (error) {
-      console.error('Failed to fetch notifications:', error);
-    }
-  };
-
-  const markAsRead = async (notificationId: string) => {
-    try {
-      const token = localStorage.getItem('token');
-      const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
-      await fetch(`${API_URL}/api/notifications/${notificationId}/read`, {
-        method: 'PATCH',
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
-      fetchNotifications();
-    } catch (error) {
-      console.error('Failed to mark as read:', error);
-    }
-  };
-
-  const handleAcceptNotification = async (notificationId: string) => {
-    try {
-      const token = localStorage.getItem('token');
-      const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
-      const response = await fetch(`${API_URL}/api/notifications/${notificationId}/accept`, {
-        method: 'POST',
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
-      const data = await response.json();
-      if (data.success) {
-        alert('Referral request accepted!');
-        fetchNotifications();
-      } else {
-        alert(data.error || 'Failed to accept');
-      }
-    } catch (error) {
-      console.error('Failed to accept:', error);
-    }
-  };
-
-  const handleRejectNotification = async (notificationId: string) => {
-    try {
-      const token = localStorage.getItem('token');
-      const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
-      await fetch(`${API_URL}/api/notifications/${notificationId}/reject`, {
-        method: 'POST',
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
-      fetchNotifications();
-    } catch (error) {
-      console.error('Failed to reject:', error);
-    }
-  };
 
   useEffect(() => {
     const handleScroll = () => {
@@ -193,90 +121,7 @@ const Header: React.FC = () => {
           <div className="hidden md:flex items-center gap-3">
             {user ? (
               <>
-                <div className="relative">
-                  <button
-                    onClick={() => setShowNotifications(!showNotifications)}
-                    className="relative p-2.5 rounded-full bg-gradient-to-r from-gray-50 to-gray-100 hover:from-gray-100 hover:to-gray-200 border border-gray-200/50 transition-all duration-200 hover:shadow-md group"
-                  >
-                    <Bell className="h-5 w-5 text-gray-700 group-hover:text-brand-purple transition-colors" />
-                    {unreadCount > 0 && (
-                      <span className="absolute -top-1 -right-1 h-5 w-5 bg-gradient-to-r from-red-500 to-pink-500 text-white text-xs font-bold rounded-full flex items-center justify-center shadow-lg animate-pulse">
-                        {unreadCount}
-                      </span>
-                    )}
-                  </button>
-                  {showNotifications && (
-                    <motion.div
-                      initial={{ opacity: 0, y: -10, scale: 0.95 }}
-                      animate={{ opacity: 1, y: 0, scale: 1 }}
-                      className="absolute right-0 mt-2 w-80 bg-white/95 backdrop-blur-xl rounded-2xl shadow-2xl border border-gray-200/50 overflow-hidden"
-                    >
-                      <div className="bg-gradient-to-r from-brand-purple to-brand-magenta p-4">
-                        <h3 className="text-white font-bold text-lg">Notifications</h3>
-                      </div>
-                      <div className="max-h-96 overflow-y-auto">
-                        {notifications.length === 0 ? (
-                          <div className="p-8 text-center text-gray-500">
-                            <Bell className="h-12 w-12 mx-auto mb-3 opacity-30" />
-                            <p className="text-sm">No notifications yet</p>
-                          </div>
-                        ) : (
-                          notifications.map((notif) => {
-                            const iconMap: any = {
-                              job_match: { icon: Briefcase, color: 'from-blue-500 to-cyan-500' },
-                              payment: { icon: Wallet, color: 'from-green-500 to-emerald-500' },
-                              application_update: { icon: FileText, color: 'from-purple-500 to-pink-500' },
-                              referral_request: { icon: User, color: 'from-orange-500 to-red-500' },
-                              referral_accepted: { icon: CheckCircle, color: 'from-green-500 to-teal-500' }
-                            };
-                            const { icon: Icon, color } = iconMap[notif.type] || iconMap.job_match;
-                            const timeAgo = new Date(notif.createdAt).toLocaleString();
-                            return (
-                              <div
-                                key={notif._id}
-                                onClick={() => markAsRead(notif._id)}
-                                className={`p-3 hover:bg-gray-50 transition-colors border-b border-gray-100 cursor-pointer ${!notif.read ? 'bg-blue-50/50' : ''}`}
-                              >
-                                <div className="flex items-start gap-3">
-                                  <div className={`h-10 w-10 rounded-full bg-gradient-to-r ${color} flex items-center justify-center flex-shrink-0`}>
-                                    <Icon className="h-5 w-5 text-white" />
-                                  </div>
-                                  <div className="flex-1">
-                                    <p className="text-sm font-semibold text-gray-900">{notif.title}</p>
-                                    <p className="text-xs text-gray-600 mt-1">{notif.message}</p>
-                                    <p className="text-xs text-gray-400 mt-1">{timeAgo}</p>
-                                    {notif.status === 'waiting' && notif.type === 'referral_request' && (
-                                      <div className="flex gap-2 mt-2">
-                                        <button
-                                          onClick={(e) => { e.stopPropagation(); handleAcceptNotification(notif._id); }}
-                                          className="text-xs bg-green-500 text-white px-3 py-1 rounded-full hover:bg-green-600"
-                                        >
-                                          Accept
-                                        </button>
-                                        <button
-                                          onClick={(e) => { e.stopPropagation(); handleRejectNotification(notif._id); }}
-                                          className="text-xs bg-gray-500 text-white px-3 py-1 rounded-full hover:bg-gray-600"
-                                        >
-                                          Reject
-                                        </button>
-                                      </div>
-                                    )}
-                                  </div>
-                                  {!notif.read && <div className="h-2 w-2 rounded-full bg-blue-500 flex-shrink-0 mt-2"></div>}
-                                </div>
-                              </div>
-                            );
-                          })
-                        )}
-                      </div>
-                      <div className="p-3 bg-gray-50 border-t border-gray-200">
-                        <button className="text-sm font-semibold text-brand-purple hover:text-brand-magenta transition-colors w-full text-center">
-                          View all notifications
-                        </button>
-                      </div>
-                    </motion.div>
-                  )}
-                </div>
+                <NotificationBell />
                 <div className="relative">
                 <button
                   onClick={() => setShowDropdown(!showDropdown)}

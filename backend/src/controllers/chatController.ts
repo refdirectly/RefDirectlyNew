@@ -1,6 +1,8 @@
 import { Request, Response } from 'express';
 import ChatRoom from '../models/ChatRoom';
 import Referral from '../models/Referral';
+import User from '../models/User';
+import notificationService from '../services/notificationService';
 
 export const getChatRoom = async (req: Request, res: Response) => {
   try {
@@ -91,6 +93,28 @@ export const sendMessage = async (req: Request, res: Response) => {
 
     chatRoom.messages.push(message as any);
     await chatRoom.save();
+
+    // Send notification to the other participant
+    const referral = await Referral.findById(roomId).populate('seekerId referrerId');
+    if (referral) {
+      const recipientRole = senderRole === 'seeker' ? 'referrer' : 'seeker';
+      const recipientId = senderRole === 'seeker' ? referral.referrerId : referral.seekerId;
+      const sender = senderRole === 'seeker' ? referral.seekerId : referral.referrerId;
+      
+      if (recipientId && sender) {
+        const senderName = (sender as any).name || 'Someone';
+        const preview = text.length > 50 ? text.substring(0, 50) + '...' : text;
+        
+        await notificationService.create({
+          recipientUserId: (recipientId as any)._id.toString(),
+          recipientRole: recipientRole as 'seeker' | 'referrer',
+          title: `💬 Message from ${senderName}`,
+          message: preview,
+          type: 'message',
+          entityId: roomId
+        });
+      }
+    }
 
     console.log(`✅ Message saved successfully`);
     res.json({ success: true, message });

@@ -115,7 +115,14 @@ export const submitEvidence = async (req: Request, res: Response) => {
     const seeker = verification.seekerId as any;
     const referrer = verification.referrerId as any;
 
-    // TODO: Add notification when notificationService supports this method
+    // await // notificationService.notifyVerificationStage({
+      userId: uploadedBy === 'seeker' ? referrer._id.toString() : seeker._id.toString(),
+      userEmail: uploadedBy === 'seeker' ? referrer.email : seeker.email,
+      userName: uploadedBy === 'seeker' ? referrer.name : seeker.name,
+      stage: 'evidence_submitted',
+      status: 'under_review',
+      details: `New ${type} has been uploaded`
+    });
 
     logger.info(`Evidence submitted for verification ${verificationId}`);
     res.json({ verification, analysis });
@@ -152,7 +159,24 @@ export const updateStage = async (req: Request, res: Response) => {
     const seeker = verification.seekerId as any;
     const referrer = verification.referrerId as any;
 
-    // TODO: Add notification when notificationService supports this method
+    await Promise.all([
+      // notificationService.notifyVerificationStage({
+        userId: seeker._id.toString(),
+        userEmail: seeker.email,
+        userName: seeker.name,
+        stage,
+        status: 'updated',
+        details: notes
+      }),
+      // notificationService.notifyVerificationStage({
+        userId: referrer._id.toString(),
+        userEmail: referrer.email,
+        userName: referrer.name,
+        stage,
+        status: 'updated',
+        details: notes
+      })
+    ]);
 
     logger.info(`Verification stage updated: ${verificationId} -> ${stage}`);
     res.json({ verification });
@@ -310,7 +334,13 @@ export const raiseDispute = async (req: Request, res: Response) => {
 
     // Notify admin and other party
     const otherParty = isSeeker ? verification.referrerId : verification.seekerId;
-    // TODO: Add notification when notificationService supports this method
+    await notificationService.notifyActionRequired({
+      userId: (otherParty as any)._id.toString(),
+      userEmail: (otherParty as any).email,
+      userName: (otherParty as any).name,
+      action: 'A dispute has been raised on your referral',
+      reason
+    });
 
     logger.info(`Dispute raised for verification ${verificationId}`);
     res.json({ verification });

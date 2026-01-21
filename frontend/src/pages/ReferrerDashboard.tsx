@@ -135,8 +135,10 @@ const ReferrerDashboard: React.FC = () => {
                   </div>
                 </div>
                 <button
+                  type="button"
                   onClick={() => setShowWelcome(false)}
                   className="text-white/80 hover:text-white transition-colors"
+                  title="Close"
                 >
                   <X className="h-5 w-5" />
                 </button>

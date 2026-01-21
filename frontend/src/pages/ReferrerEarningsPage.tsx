@@ -277,7 +277,9 @@ const ReferrerEarningsPage: React.FC = () => {
                         className="w-full sm:w-auto pl-10 pr-4 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-purple"
                       />
                     </div>
+                    <label htmlFor="transaction-filter" className="sr-only">Filter transactions</label>
                     <select
+                      id="transaction-filter"
                       value={filter}
                       onChange={(e) => setFilter(e.target.value as any)}
                       className="w-full sm:w-auto px-4 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-purple"

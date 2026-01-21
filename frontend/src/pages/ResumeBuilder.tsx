@@ -173,27 +173,27 @@ const ResumeBuilder: React.FC = () => {
             className="max-w-6xl mx-auto"
           >
             {/* Hero Section */}
-            <div className="text-center mb-16">
+            <div className="text-center mb-12 md:mb-16">
               <motion.div
                 initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
-                className="inline-flex items-center gap-2 bg-gradient-to-r from-purple-600 to-pink-600 text-white px-6 py-3 rounded-full mb-6 shadow-xl"
+                className="inline-flex items-center gap-2 bg-gradient-to-r from-purple-600 to-pink-600 text-white px-4 md:px-6 py-2 md:py-3 rounded-full mb-4 md:mb-6 shadow-xl text-xs md:text-sm"
               >
-                <Sparkles className="h-5 w-5 animate-pulse" />
-                <span className="text-sm font-bold tracking-wide">AI-POWERED RESUME BUILDER</span>
+                <Sparkles className="h-4 w-4 md:h-5 md:w-5 animate-pulse" />
+                <span className="font-bold tracking-wide">AI-POWERED RESUME BUILDER</span>
               </motion.div>
-              <h1 className="font-display text-5xl md:text-7xl font-bold text-gray-900 mb-6 leading-tight">
+              <h1 className="font-display text-3xl sm:text-4xl md:text-5xl lg:text-7xl font-bold text-gray-900 mb-4 md:mb-6 leading-tight px-4">
                 Build Your Perfect Resume
                 <span className="block text-transparent bg-clip-text bg-gradient-to-r from-purple-600 via-pink-600 to-red-600 mt-2">
                   in Minutes
                 </span>
               </h1>
-              <p className="text-xl text-gray-600 max-w-3xl mx-auto mb-12">
+              <p className="text-base md:text-xl text-gray-600 max-w-3xl mx-auto mb-8 md:mb-12 px-4">
                 Leverage AI to create professional, ATS-optimized resumes that get you noticed
               </p>
               
               {/* Feature Cards */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto">
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 md:gap-6 max-w-5xl mx-auto px-4">
                 {[
                   { icon: Sparkles, title: 'AI Content', desc: 'Smart suggestions', gradient: 'from-purple-600 to-pink-600', bg: 'from-purple-50 to-purple-100' },
                   { icon: FileText, title: 'ATS-Optimized', desc: 'Pass tracking systems', gradient: 'from-pink-600 to-red-600', bg: 'from-pink-50 to-pink-100' },
@@ -204,13 +204,13 @@ const ResumeBuilder: React.FC = () => {
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.1 * i }}
-                    className={`bg-gradient-to-br ${feature.bg} rounded-3xl p-8 border-2 border-white shadow-lg hover:shadow-2xl transition-all hover:-translate-y-1`}
+                    className={`bg-gradient-to-br ${feature.bg} rounded-2xl md:rounded-3xl p-6 md:p-8 border-2 border-white shadow-lg hover:shadow-2xl transition-all hover:-translate-y-1`}
                   >
-                    <div className={`h-16 w-16 rounded-2xl bg-gradient-to-br ${feature.gradient} flex items-center justify-center mb-4 mx-auto shadow-lg`}>
-                      <feature.icon className="h-8 w-8 text-white" />
+                    <div className={`h-12 w-12 md:h-16 md:w-16 rounded-xl md:rounded-2xl bg-gradient-to-br ${feature.gradient} flex items-center justify-center mb-3 md:mb-4 mx-auto shadow-lg`}>
+                      <feature.icon className="h-6 w-6 md:h-8 md:w-8 text-white" />
                     </div>
-                    <h3 className="font-bold text-lg text-gray-900 mb-2">{feature.title}</h3>
-                    <p className="text-sm text-gray-600">{feature.desc}</p>
+                    <h3 className="font-bold text-base md:text-lg text-gray-900 mb-1 md:mb-2">{feature.title}</h3>
+                    <p className="text-xs md:text-sm text-gray-600">{feature.desc}</p>
                   </motion.div>
                 ))}
               </div>
@@ -221,15 +221,15 @@ const ResumeBuilder: React.FC = () => {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.4 }}
-              className="bg-white/80 backdrop-blur-xl rounded-3xl shadow-2xl p-10 mb-8 border-2 border-white"
+              className="bg-white/80 backdrop-blur-xl rounded-2xl md:rounded-3xl shadow-2xl p-6 md:p-10 mb-6 md:mb-8 border-2 border-white"
             >
-              <div className="flex items-center gap-4 mb-8">
-                <div className="h-14 w-14 rounded-2xl bg-gradient-to-br from-blue-600 to-cyan-600 flex items-center justify-center shadow-lg">
-                  <User className="h-7 w-7 text-white" />
+              <div className="flex items-center gap-3 md:gap-4 mb-6 md:mb-8">
+                <div className="h-10 w-10 md:h-14 md:w-14 rounded-xl md:rounded-2xl bg-gradient-to-br from-blue-600 to-cyan-600 flex items-center justify-center shadow-lg">
+                  <User className="h-5 w-5 md:h-7 md:w-7 text-white" />
                 </div>
-                <h2 className="text-3xl font-bold text-gray-900">Personal Information</h2>
+                <h2 className="text-xl md:text-3xl font-bold text-gray-900">Personal Information</h2>
               </div>
-              <div className="grid md:grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
                 {[
                   { placeholder: 'Full Name *', value: formData.fullName, key: 'fullName', type: 'text' },
                   { placeholder: 'Email *', value: formData.email, key: 'email', type: 'email' },
@@ -246,26 +246,27 @@ const ResumeBuilder: React.FC = () => {
                     placeholder={field.placeholder}
                     value={field.value}
                     onChange={(e) => setFormData({ ...formData, [field.key]: e.target.value })}
-                    className="px-5 py-4 border-2 border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-purple-600 focus:border-transparent transition-all text-gray-900 placeholder-gray-400"
+                    className="px-4 md:px-5 py-3 md:py-4 border-2 border-gray-200 rounded-xl md:rounded-2xl focus:outline-none focus:ring-2 focus:ring-purple-600 focus:border-transparent transition-all text-gray-900 placeholder-gray-400 text-sm md:text-base"
                   />
                 ))}
               </div>
-              <div className="mt-6 relative">
+              <div className="mt-4 md:mt-6 relative">
                 <textarea
                   placeholder="Professional Summary"
                   value={formData.summary}
                   onChange={(e) => setFormData({ ...formData, summary: e.target.value })}
                   rows={4}
-                  className="w-full px-5 py-4 border-2 border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-purple-600 focus:border-transparent transition-all text-gray-900 placeholder-gray-400"
+                  className="w-full px-4 md:px-5 py-3 md:py-4 border-2 border-gray-200 rounded-xl md:rounded-2xl focus:outline-none focus:ring-2 focus:ring-purple-600 focus:border-transparent transition-all text-gray-900 placeholder-gray-400 text-sm md:text-base"
                 />
                 <button
                   type="button"
                   onClick={generateAISummary}
                   disabled={generating}
-                  className="absolute top-3 right-3 flex items-center gap-2 bg-gradient-to-r from-blue-600 to-cyan-600 text-white px-5 py-2.5 rounded-xl text-sm font-semibold hover:shadow-xl transition-all disabled:opacity-50 hover:scale-105"
+                  className="absolute top-2 md:top-3 right-2 md:right-3 flex items-center gap-1 md:gap-2 bg-gradient-to-r from-blue-600 to-cyan-600 text-white px-3 md:px-5 py-2 md:py-2.5 rounded-lg md:rounded-xl text-xs md:text-sm font-semibold hover:shadow-xl transition-all disabled:opacity-50 hover:scale-105"
                 >
-                  <Sparkles className="h-4 w-4" />
-                  {generating ? 'Generating...' : 'AI Generate'}
+                  <Sparkles className="h-3 w-3 md:h-4 md:w-4" />
+                  <span className="hidden sm:inline">{generating ? 'Generating...' : 'AI Generate'}</span>
+                  <span className="sm:hidden">AI</span>
                 </button>
               </div>
             </motion.div>
@@ -275,20 +276,20 @@ const ResumeBuilder: React.FC = () => {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.5 }}
-              className="bg-white/80 backdrop-blur-xl rounded-3xl shadow-2xl p-10 mb-8 border-2 border-white"
+              className="bg-white/80 backdrop-blur-xl rounded-2xl md:rounded-3xl shadow-2xl p-6 md:p-10 mb-6 md:mb-8 border-2 border-white"
             >
-              <div className="flex items-center justify-between mb-8">
-                <div className="flex items-center gap-4">
-                  <div className="h-14 w-14 rounded-2xl bg-gradient-to-br from-purple-600 to-pink-600 flex items-center justify-center shadow-lg">
-                    <Briefcase className="h-7 w-7 text-white" />
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6 md:mb-8">
+                <div className="flex items-center gap-3 md:gap-4">
+                  <div className="h-10 w-10 md:h-14 md:w-14 rounded-xl md:rounded-2xl bg-gradient-to-br from-purple-600 to-pink-600 flex items-center justify-center shadow-lg">
+                    <Briefcase className="h-5 w-5 md:h-7 md:w-7 text-white" />
                   </div>
-                  <h2 className="text-3xl font-bold text-gray-900">Experience</h2>
+                  <h2 className="text-xl md:text-3xl font-bold text-gray-900">Experience</h2>
                 </div>
                 <button
                   onClick={addExperience}
-                  className="flex items-center gap-2 bg-gradient-to-r from-purple-600 to-pink-600 text-white px-6 py-3 rounded-xl font-semibold hover:shadow-xl transition-all hover:scale-105"
+                  className="flex items-center gap-2 bg-gradient-to-r from-purple-600 to-pink-600 text-white px-4 md:px-6 py-2 md:py-3 rounded-lg md:rounded-xl text-sm md:text-base font-semibold hover:shadow-xl transition-all hover:scale-105 w-full sm:w-auto"
                 >
-                  <Plus className="h-5 w-5" />
+                  <Plus className="h-4 w-4 md:h-5 md:w-5" />
                   Add Experience
                 </button>
               </div>
@@ -358,20 +359,20 @@ const ResumeBuilder: React.FC = () => {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.6 }}
-              className="bg-white/80 backdrop-blur-xl rounded-3xl shadow-2xl p-10 mb-8 border-2 border-white"
+              className="bg-white/80 backdrop-blur-xl rounded-2xl md:rounded-3xl shadow-2xl p-6 md:p-10 mb-6 md:mb-8 border-2 border-white"
             >
-              <div className="flex items-center justify-between mb-8">
-                <div className="flex items-center gap-4">
-                  <div className="h-14 w-14 rounded-2xl bg-gradient-to-br from-green-600 to-emerald-600 flex items-center justify-center shadow-lg">
-                    <GraduationCap className="h-7 w-7 text-white" />
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6 md:mb-8">
+                <div className="flex items-center gap-3 md:gap-4">
+                  <div className="h-10 w-10 md:h-14 md:w-14 rounded-xl md:rounded-2xl bg-gradient-to-br from-green-600 to-emerald-600 flex items-center justify-center shadow-lg">
+                    <GraduationCap className="h-5 w-5 md:h-7 md:w-7 text-white" />
                   </div>
-                  <h2 className="text-3xl font-bold text-gray-900">Education</h2>
+                  <h2 className="text-xl md:text-3xl font-bold text-gray-900">Education</h2>
                 </div>
                 <button
                   onClick={addEducation}
-                  className="flex items-center gap-2 bg-gradient-to-r from-green-600 to-emerald-600 text-white px-6 py-3 rounded-xl font-semibold hover:shadow-xl transition-all hover:scale-105"
+                  className="flex items-center gap-2 bg-gradient-to-r from-green-600 to-emerald-600 text-white px-4 md:px-6 py-2 md:py-3 rounded-lg md:rounded-xl text-sm md:text-base font-semibold hover:shadow-xl transition-all hover:scale-105 w-full sm:w-auto"
                 >
-                  <Plus className="h-5 w-5" />
+                  <Plus className="h-4 w-4 md:h-5 md:w-5" />
                   Add Education
                 </button>
               </div>
@@ -409,21 +410,22 @@ const ResumeBuilder: React.FC = () => {
               transition={{ delay: 0.7 }}
               className="bg-white/80 backdrop-blur-xl rounded-3xl shadow-2xl p-10 mb-12 border-2 border-white"
             >
-              <div className="flex items-center justify-between mb-8">
-                <div className="flex items-center gap-4">
-                  <div className="h-14 w-14 rounded-2xl bg-gradient-to-br from-orange-600 to-red-600 flex items-center justify-center shadow-lg">
-                    <Code className="h-7 w-7 text-white" />
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6 md:mb-8">
+                <div className="flex items-center gap-3 md:gap-4">
+                  <div className="h-10 w-10 md:h-14 md:w-14 rounded-xl md:rounded-2xl bg-gradient-to-br from-orange-600 to-red-600 flex items-center justify-center shadow-lg">
+                    <Code className="h-5 w-5 md:h-7 md:w-7 text-white" />
                   </div>
-                  <h2 className="text-3xl font-bold text-gray-900">Skills</h2>
+                  <h2 className="text-xl md:text-3xl font-bold text-gray-900">Skills</h2>
                 </div>
                 <button
                   type="button"
                   onClick={generateAISkills}
                   disabled={generating}
-                  className="flex items-center gap-2 bg-gradient-to-r from-orange-600 to-red-600 text-white px-6 py-3 rounded-xl font-semibold hover:shadow-xl transition-all disabled:opacity-50 hover:scale-105"
+                  className="flex items-center gap-2 bg-gradient-to-r from-orange-600 to-red-600 text-white px-4 md:px-6 py-2 md:py-3 rounded-lg md:rounded-xl text-sm md:text-base font-semibold hover:shadow-xl transition-all disabled:opacity-50 hover:scale-105 w-full sm:w-auto"
                 >
-                  <Sparkles className="h-5 w-5" />
-                  {generating ? 'Generating...' : 'AI Suggest Skills'}
+                  <Sparkles className="h-4 w-4 md:h-5 md:w-5" />
+                  <span className="hidden sm:inline">{generating ? 'Generating...' : 'AI Suggest Skills'}</span>
+                  <span className="sm:hidden">AI Skills</span>
                 </button>
               </div>
               <textarea
@@ -857,25 +859,25 @@ const ResumeBuilder: React.FC = () => {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.9 }}
-              className="flex flex-col sm:flex-row gap-6 justify-center items-center"
+              className="flex flex-col sm:flex-row gap-4 md:gap-6 justify-center items-stretch sm:items-center px-4"
             >
               <button
                 onClick={() => setShowPreview(!showPreview)}
-                className="flex items-center gap-3 bg-gradient-to-r from-blue-600 to-cyan-600 text-white px-12 py-6 rounded-2xl font-bold text-lg hover:shadow-2xl transition-all hover:scale-105 w-full sm:w-auto"
+                className="flex items-center justify-center gap-2 md:gap-3 bg-gradient-to-r from-blue-600 to-cyan-600 text-white px-8 md:px-12 py-4 md:py-6 rounded-xl md:rounded-2xl font-bold text-base md:text-lg hover:shadow-2xl transition-all hover:scale-105"
               >
-                <FileText className="h-6 w-6" />
+                <FileText className="h-5 w-5 md:h-6 md:w-6" />
                 {showPreview ? 'Hide Preview' : 'Show Preview'}
               </button>
               <button
                 onClick={handleDownload}
                 disabled={downloading || !showPreview}
-                className="flex items-center gap-3 bg-gradient-to-r from-purple-600 via-pink-600 to-red-600 text-white px-12 py-6 rounded-2xl font-bold text-lg hover:shadow-2xl transition-all hover:scale-105 w-full sm:w-auto disabled:opacity-50 disabled:cursor-not-allowed"
+                className="flex items-center justify-center gap-2 md:gap-3 bg-gradient-to-r from-purple-600 via-pink-600 to-red-600 text-white px-8 md:px-12 py-4 md:py-6 rounded-xl md:rounded-2xl font-bold text-base md:text-lg hover:shadow-2xl transition-all hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                <Download className="h-6 w-6" />
-                {downloading ? 'Generating PDF...' : 'Download PDF'}
+                <Download className="h-5 w-5 md:h-6 md:w-6" />
+                {downloading ? 'Generating...' : 'Download PDF'}
               </button>
-              <button className="flex items-center gap-3 bg-white border-2 border-purple-600 text-purple-600 px-12 py-6 rounded-2xl font-bold text-lg hover:bg-purple-600 hover:text-white hover:shadow-2xl transition-all hover:scale-105 w-full sm:w-auto">
-                <Save className="h-6 w-6" />
+              <button className="flex items-center justify-center gap-2 md:gap-3 bg-white border-2 border-purple-600 text-purple-600 px-8 md:px-12 py-4 md:py-6 rounded-xl md:rounded-2xl font-bold text-base md:text-lg hover:bg-purple-600 hover:text-white hover:shadow-2xl transition-all hover:scale-105">
+                <Save className="h-5 w-5 md:h-6 md:w-6" />
                 Save Draft
               </button>
             </motion.div>

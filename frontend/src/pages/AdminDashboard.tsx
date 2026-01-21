@@ -822,7 +822,9 @@ const AdminDashboard: React.FC = () => {
                           <p className="text-xs text-gray-500 mt-2">Applied: {new Date(app.createdAt).toLocaleDateString()}</p>
                         </div>
                         <div className="flex flex-col items-end gap-2">
+                          <label htmlFor={`app-status-${app._id}`} className="sr-only">Application Status</label>
                           <select
+                            id={`app-status-${app._id}`}
                             value={app.status}
                             onChange={(e) => {
                               fetch(`${import.meta.env.VITE_API_URL}/api/career/admin/applications/${app._id}`, {
@@ -1215,8 +1217,9 @@ const AdminDashboard: React.FC = () => {
             <h2 className="text-2xl font-bold text-gray-900 mb-4">Send Bulk Email</h2>
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">Target Audience</label>
+                <label htmlFor="bulk-email-audience" className="block text-sm font-semibold text-gray-700 mb-2">Target Audience</label>
                 <select
+                  id="bulk-email-audience"
                   value={bulkEmailData.role}
                   onChange={(e) => setBulkEmailData({...bulkEmailData, role: e.target.value})}
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-purple"

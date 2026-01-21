@@ -201,10 +201,11 @@ const AICallManager: React.FC = () => {
                     </div>
                   </div>
                   <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">
+                    <label htmlFor="call-purpose" className="block text-sm font-semibold text-gray-700 mb-2">
                       Call Purpose
                     </label>
                     <select
+                      id="call-purpose"
                       value={callPurpose}
                       onChange={(e) => setCallPurpose(e.target.value)}
                       className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"

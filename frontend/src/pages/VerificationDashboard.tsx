@@ -161,7 +161,9 @@ const VerificationDashboard: React.FC = () => {
                   {verification.verificationStatus.replace('_', ' ').toUpperCase()}
                 </span>
                 {verification.autoVerified && (
-                  <Shield className="w-5 h-5 text-green-500" title="Auto-verified by AI" />
+                  <span title="Auto-verified by AI">
+                    <Shield className="w-5 h-5 text-green-500" />
+                  </span>
                 )}
               </div>
 
@@ -353,8 +355,9 @@ const VerificationDashboard: React.FC = () => {
                   <h3 className="text-xl font-bold mb-4">Upload Evidence</h3>
                   <div className="space-y-4">
                     <div>
-                      <label className="block text-sm font-medium mb-2">Evidence Type</label>
+                      <label htmlFor="evidence-type" className="block text-sm font-medium mb-2">Evidence Type</label>
                       <select
+                        id="evidence-type"
                         value={uploadData.type}
                         onChange={(e) => setUploadData({...uploadData, type: e.target.value})}
                         className="w-full px-3 py-2 border rounded-lg"

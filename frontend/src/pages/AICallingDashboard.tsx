@@ -240,8 +240,9 @@ const AICallingDashboard: React.FC = () => {
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">Objective</label>
+                    <label htmlFor="script-objective" className="block text-sm font-semibold text-gray-700 mb-2">Objective</label>
                     <select
+                      id="script-objective"
                       value={scriptForm.objective}
                       onChange={(e) => setScriptForm({ ...scriptForm, objective: e.target.value })}
                       className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
@@ -335,8 +336,9 @@ const AICallingDashboard: React.FC = () => {
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">Type</label>
+                    <label htmlFor="followup-type" className="block text-sm font-semibold text-gray-700 mb-2">Type</label>
                     <select
+                      id="followup-type"
                       value={followupForm.type}
                       onChange={(e) => setFollowupForm({ ...followupForm, type: e.target.value })}
                       className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500"
@@ -362,8 +364,9 @@ const AICallingDashboard: React.FC = () => {
                 <h2 className="text-xl font-bold mb-4">Real-time Coaching</h2>
                 <div className="space-y-4">
                   <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">Current Phase</label>
+                    <label htmlFor="coaching-phase" className="block text-sm font-semibold text-gray-700 mb-2">Current Phase</label>
                     <select
+                      id="coaching-phase"
                       value={coachingForm.currentPhase}
                       onChange={(e) => setCoachingForm({ ...coachingForm, currentPhase: e.target.value })}
                       className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500"

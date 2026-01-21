@@ -191,15 +191,14 @@ export const register = async (req: Request, res: Response) => {
     );
 
     // Send welcome notification
-    await notificationService.sendNotification({
-      userId: user._id.toString(),
-      type: 'welcome',
+    await notificationService.create({
+      recipientUserId: user._id.toString(),
+      recipientRole: role as 'seeker' | 'referrer',
       title: `Welcome to RefDirectly, ${user.name}! 🎉`,
       message: role === 'seeker' 
         ? 'Start exploring job opportunities and connect with referrers from top companies.'
         : 'Start earning by referring talented candidates to your company.',
-      priority: 'high',
-      link: role === 'seeker' ? '/seeker/dashboard' : '/referrer/dashboard'
+      type: 'system'
     });
 
     res.status(201).json({

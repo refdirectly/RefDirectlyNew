@@ -52,6 +52,7 @@ import PricingPage from './pages/PricingPage';
 import CheckoutPage from './pages/CheckoutPage';
 import Chatbot from './components/Chatbot';
 import BlogPage from './pages/BlogPage';
+import NotificationsPage from './pages/NotificationsPage';
 import { PressPage, HelpCenterPage, CommunityPage, APIDocsPage, PrivacyPolicyPage, TermsOfServicePage, CookiePolicyPage, DisclaimerPage, CareersPage } from './pages/PlaceholderPages';
 import ScrollToTop from './components/ScrollToTop';
 
@@ -126,6 +127,7 @@ function App() {
         <Route path="/seeker/dashboard" element={<DashboardPage />} />
         <Route path="/seeker/chat" element={<SeekerChatPage />} />
         <Route path="/seeker/verification" element={<VerificationDashboard />} />
+        <Route path="/notifications" element={<NotificationsPage />} />
         <Route path="/chat" element={<ChatPage />} />
         <Route path="/applications" element={<ApplicationsPage />} />
         <Route path="/resume-builder" element={<ResumeBuilder />} />

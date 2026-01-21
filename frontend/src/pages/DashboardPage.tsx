@@ -159,8 +159,10 @@ const DashboardPage: React.FC = () => {
                   </div>
                 </div>
                 <button
+                  type="button"
                   onClick={() => setShowWelcome(false)}
                   className="text-white/80 hover:text-white transition-colors"
+                  title="Close welcome message"
                 >
                   <X className="h-5 w-5" />
                 </button>
@@ -307,7 +309,7 @@ const DashboardPage: React.FC = () => {
               >
                 <h2 className="font-display text-2xl font-bold text-gray-900 mb-6">Recent Activity</h2>
                 <div className="space-y-4">
-                  {recentActivity.length > 0 ? recentActivity.map((activity, index) => (
+                  {recentActivity.length > 0 ? recentActivity.map((activity: { type: string; company: string; role: string; status: string; time: string }, index: number) => (
                     <div
                       key={index}
                       className="flex items-center justify-between p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors"

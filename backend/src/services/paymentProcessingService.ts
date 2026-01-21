@@ -115,27 +115,23 @@ export class PaymentProcessingService {
       if (!seeker || !referrer) return;
 
       // Notify referrer about payment
-      await notificationService.sendNotification({
-        userId: referrer._id.toString(),
-        type: 'payment_received',
-        title: 'Payment Processed! 💰',
+      await notificationService.create({
+        recipientUserId: referrer._id.toString(),
+        recipientRole: 'referrer',
+        title: '💰 Payment Processed!',
         message: `You've received $${verification.payment.referrerAmount} for your successful referral!`,
-        data: {
-          verificationId: verification._id.toString(),
-          amount: verification.payment.referrerAmount,
-          transactionId: verification.payment.transactionId
-        }
+        type: 'status_update',
+        entityId: verification._id.toString()
       });
 
       // Notify seeker about completion
-      await notificationService.sendNotification({
-        userId: seeker._id.toString(),
-        type: 'referral_completed',
-        title: 'Referral Completed! 🎉',
+      await notificationService.create({
+        recipientUserId: seeker._id.toString(),
+        recipientRole: 'seeker',
+        title: '🎉 Referral Completed!',
         message: 'Your referral has been verified and payment has been processed to your referrer.',
-        data: {
-          verificationId: verification._id.toString()
-        }
+        type: 'status_update',
+        entityId: verification._id.toString()
       });
 
       logger.info(`Payment notifications sent for verification ${verification._id}`);

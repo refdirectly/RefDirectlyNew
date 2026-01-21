@@ -28,7 +28,7 @@ export default function ChatInterface({ roomId, userRole, socket, onClose }: Cha
   const [isLoading, setIsLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const typingTimeoutRef = useRef<NodeJS.Timeout>();
+  const typingTimeoutRef = useRef<ReturnType<typeof setTimeout>>();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const emojis = ['😊', '😂', '❤️', '👍', '🎉', '🔥', '✨', '💯', '🙌', '👏', '💪', '🚀', '⭐', '✅', '💼', '📝', '📧', '📞', '💡', '🎯'];
@@ -305,7 +305,7 @@ export default function ChatInterface({ roomId, userRole, socket, onClose }: Cha
           <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="mb-4 flex items-center gap-3 bg-white border border-gray-200 rounded-xl p-3 shadow-sm">
             {selectedFile.type.startsWith('image/') ? <Image className="h-5 w-5 text-blue-600" /> : <File className="h-5 w-5 text-blue-600" />}
             <span className="text-sm text-gray-700 flex-1 truncate">{selectedFile.name}</span>
-            <button onClick={() => setSelectedFile(null)} className="text-red-500 hover:text-red-700">
+            <button type="button" onClick={() => setSelectedFile(null)} className="text-red-500 hover:text-red-700" title="Remove file">
               <X className="h-5 w-5" />
             </button>
           </motion.div>
@@ -313,20 +313,20 @@ export default function ChatInterface({ roomId, userRole, socket, onClose }: Cha
         
         <div className="flex items-end gap-2">
           <div className="flex gap-2">
-            <button onClick={() => fileInputRef.current?.click()} className="p-3.5 rounded-xl bg-white hover:bg-brand-purple hover:text-white text-gray-600 transition-all border border-gray-300 hover:border-brand-purple shadow-sm hover:shadow-md" title="Attach file">
+            <button type="button" onClick={() => fileInputRef.current?.click()} className="p-3.5 rounded-xl bg-white hover:bg-brand-purple hover:text-white text-gray-600 transition-all border border-gray-300 hover:border-brand-purple shadow-sm hover:shadow-md" title="Attach file">
               <Paperclip className="h-5 w-5" />
             </button>
-            <input ref={fileInputRef} type="file" onChange={handleFileSelect} className="hidden" accept="image/*,.pdf,.doc,.docx" />
+            <input ref={fileInputRef} type="file" onChange={handleFileSelect} className="hidden" accept="image/*,.pdf,.doc,.docx" aria-label="Attach file" />
             
             <div className="relative">
-              <button onClick={() => setShowEmojiPicker(!showEmojiPicker)} className="p-3.5 rounded-xl bg-white hover:bg-brand-purple hover:text-white text-gray-600 transition-all border border-gray-300 hover:border-brand-purple shadow-sm hover:shadow-md" title="Add emoji">
+              <button type="button" onClick={() => setShowEmojiPicker(!showEmojiPicker)} className="p-3.5 rounded-xl bg-white hover:bg-brand-purple hover:text-white text-gray-600 transition-all border border-gray-300 hover:border-brand-purple shadow-sm hover:shadow-md" title="Add emoji">
                 <Smile className="h-5 w-5" />
               </button>
               
               {showEmojiPicker && (
                 <motion.div initial={{ opacity: 0, scale: 0.9, y: 10 }} animate={{ opacity: 1, scale: 1, y: 0 }} className="absolute bottom-full mb-2 left-0 bg-white rounded-xl shadow-2xl border border-gray-200 p-3 grid grid-cols-5 gap-2 z-10">
                   {emojis.map((emoji, i) => (
-                    <button key={i} onClick={() => handleEmojiClick(emoji)} className="text-2xl hover:scale-125 transition-transform p-1 hover:bg-gray-100 rounded">
+                    <button type="button" key={i} onClick={() => handleEmojiClick(emoji)} className="text-2xl hover:scale-125 transition-transform p-1 hover:bg-gray-100 rounded" title={`Insert ${emoji} emoji`}>
                       {emoji}
                     </button>
                   ))}
@@ -336,10 +336,11 @@ export default function ChatInterface({ roomId, userRole, socket, onClose }: Cha
           </div>
           
           <div className="flex-1 relative">
-            <input type="text" value={inputText} onChange={(e) => setInputText(e.target.value)} onKeyPress={(e) => e.key === 'Enter' && !e.shiftKey && handleSend()} placeholder="Type your message..." className="w-full px-5 py-4 bg-white border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-purple focus:border-brand-purple transition-all text-gray-900 placeholder-gray-400 shadow-sm" />
+            <label htmlFor="message-input" className="sr-only">Type your message</label>
+            <input id="message-input" type="text" value={inputText} onChange={(e) => setInputText(e.target.value)} onKeyPress={(e) => e.key === 'Enter' && !e.shiftKey && handleSend()} placeholder="Type your message..." className="w-full px-5 py-4 bg-white border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-purple focus:border-brand-purple transition-all text-gray-900 placeholder-gray-400 shadow-sm" />
           </div>
           
-          <button onClick={handleSend} disabled={!inputText.trim() && !selectedFile} className="bg-gradient-to-r from-brand-purple to-brand-magenta text-white px-7 py-4 rounded-xl font-semibold hover:shadow-xl transition-all disabled:opacity-40 disabled:cursor-not-allowed hover:scale-[1.02] flex items-center gap-2.5 shadow-lg" title="Send message">
+          <button type="button" onClick={handleSend} disabled={!inputText.trim() && !selectedFile} className="bg-gradient-to-r from-brand-purple to-brand-magenta text-white px-7 py-4 rounded-xl font-semibold hover:shadow-xl transition-all disabled:opacity-40 disabled:cursor-not-allowed hover:scale-[1.02] flex items-center gap-2.5 shadow-lg" title="Send message">
             <Send className="h-5 w-5" />
             <span className="hidden sm:inline font-bold">Send</span>
           </button>

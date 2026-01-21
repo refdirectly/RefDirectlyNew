@@ -121,12 +121,13 @@ export const requestReferral = async (req: Request, res: Response) => {
     // Broadcast to all matching referrers via Socket.IO for real-time notification
     const notificationPromises = referrers.map(async (referrer) => {
       // Create notification
-      await notificationService.sendNotification({
-        userId: referrer._id.toString(),
-        type: 'new_referral_request',
-        title: 'New Referral Request',
+      await notificationService.create({
+        recipientUserId: referrer._id.toString(),
+        recipientRole: 'referrer',
+        title: '🤝 New Referral Request',
         message: `${seeker?.name || 'Candidate'} requested a referral for ${title} at ${company}`,
-        data: { referralId: referral._id.toString() }
+        type: 'application',
+        entityId: referral._id.toString()
       });
       
       // Real-time Socket.IO broadcast

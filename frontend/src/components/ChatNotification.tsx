@@ -73,11 +73,13 @@ export default function ChatNotification({ socket }: ChatNotificationProps) {
                 <p className="text-sm text-gray-600">{notification.message}</p>
               </div>
               <button
+                type="button"
                 onClick={(e) => {
                   e.stopPropagation();
                   handleDismiss(notification.id);
                 }}
                 className="text-gray-400 hover:text-gray-600"
+                title="Dismiss notification"
               >
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />

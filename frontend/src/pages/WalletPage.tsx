@@ -168,8 +168,10 @@ const WalletPage: React.FC = () => {
                       <Wallet className="h-6 w-6" />
                     </div>
                     <button
+                      type="button"
                       onClick={() => setShowAddFunds(true)}
                       className="h-10 w-10 rounded-lg bg-white/20 hover:bg-white/30 backdrop-blur-sm flex items-center justify-center transition-all hover:scale-110"
+                      title="Add funds"
                     >
                       <Plus className="h-5 w-5" />
                     </button>
