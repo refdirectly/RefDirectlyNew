@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { AlertCircle, Loader2, Briefcase, TrendingUp, Users, CheckCircle, Eye, EyeOff, Sparkles } from 'lucide-react';
 import { validateEmail, validatePassword } from '../utils/validation';
 
@@ -13,6 +13,7 @@ const Login: React.FC = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [fieldErrors, setFieldErrors] = useState({ email: '', password: '' });
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -66,10 +67,16 @@ const Login: React.FC = () => {
       
       setSuccess(true);
       
+      const redirectUrl = searchParams.get('redirect');
+      
       setTimeout(() => {
-        navigate('/seeker/dashboard', {
-          state: { welcomeBack: true, userName: data.user.name }
-        });
+        if (redirectUrl) {
+          navigate(redirectUrl);
+        } else {
+          navigate('/seeker/dashboard', {
+            state: { welcomeBack: true, userName: data.user.name }
+          });
+        }
       }, 1000);
     } catch (err: any) {
       setError(err.message || 'An error occurred. Please try again.');

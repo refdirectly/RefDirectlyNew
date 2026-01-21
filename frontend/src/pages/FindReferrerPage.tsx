@@ -97,6 +97,25 @@ const FindReferrerPage: React.FC = () => {
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     if (company.trim()) {
+      const token = localStorage.getItem('token');
+      const user = localStorage.getItem('user');
+      
+      // Check if user is logged in and is a seeker
+      if (!token || !user) {
+        // Not logged in - redirect to login with return URL
+        navigate(`/auth/login?redirect=/referrers?company=${encodeURIComponent(company)}&role=${encodeURIComponent(role)}`);
+        return;
+      }
+      
+      const userData = JSON.parse(user);
+      if (userData.role !== 'seeker') {
+        // Not a seeker - show message and redirect to appropriate login
+        alert('Please login as a Job Seeker to find referrers');
+        navigate(`/auth/login?redirect=/referrers?company=${encodeURIComponent(company)}&role=${encodeURIComponent(role)}`);
+        return;
+      }
+      
+      // User is logged in as seeker - proceed
       navigate(`/referrers?company=${encodeURIComponent(company)}&role=${encodeURIComponent(role)}`);
     }
   };
