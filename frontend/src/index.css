@@ -2,14 +2,26 @@
 @tailwind components;
 @tailwind utilities;
 
+@layer base {
+  html {
+    @apply scroll-smooth;
+  }
+  body {
+    @apply overflow-x-hidden;
+  }
+}
+
 @layer components {
   .btn {
-    @apply inline-flex items-center justify-center px-6 py-3 font-semibold rounded-lg transition-transform duration-200 ease-in-out transform hover:scale-[1.03] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-purple;
+    @apply inline-flex items-center justify-center px-4 py-2 sm:px-6 sm:py-3 font-semibold rounded-lg transition-transform duration-200 ease-in-out transform hover:scale-[1.03] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-purple text-sm sm:text-base;
   }
   .btn-primary {
     @apply bg-gradient-primary text-white;
   }
   .btn-secondary {
     @apply border-2 border-gray-300 text-gray-700 hover:border-gray-400 hover:text-gray-900;
+  }
+  .container {
+    @apply px-4 sm:px-6 lg:px-8;
   }
 }

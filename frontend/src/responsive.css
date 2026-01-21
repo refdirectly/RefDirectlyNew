@@ -1,0 +1,76 @@
+/* Mobile-first responsive overrides */
+@media (max-width: 639px) {
+  .container {
+    padding-left: 1rem !important;
+    padding-right: 1rem !important;
+  }
+  
+  h1, .text-5xl, .text-6xl, .text-7xl {
+    font-size: 1.875rem !important;
+    line-height: 2.25rem !important;
+  }
+  
+  h2, .text-4xl {
+    font-size: 1.5rem !important;
+    line-height: 2rem !important;
+  }
+  
+  h3, .text-3xl {
+    font-size: 1.25rem !important;
+    line-height: 1.75rem !important;
+  }
+  
+  .grid {
+    grid-template-columns: 1fr !important;
+  }
+  
+  .hidden-mobile {
+    display: none !important;
+  }
+}
+
+@media (min-width: 640px) and (max-width: 767px) {
+  .container {
+    padding-left: 1.5rem !important;
+    padding-right: 1.5rem !important;
+  }
+}
+
+@media (min-width: 768px) and (max-width: 1023px) {
+  .container {
+    padding-left: 2rem !important;
+    padding-right: 2rem !important;
+  }
+}
+
+/* Ensure all images are responsive */
+img {
+  max-width: 100%;
+  height: auto;
+}
+
+/* Responsive tables */
+@media (max-width: 767px) {
+  table {
+    display: block;
+    overflow-x: auto;
+    white-space: nowrap;
+  }
+}
+
+/* Responsive modals */
+@media (max-width: 639px) {
+  .modal-content {
+    width: 95vw !important;
+    max-width: 95vw !important;
+    margin: 0.5rem !important;
+  }
+}
+
+/* Touch-friendly buttons on mobile */
+@media (max-width: 767px) {
+  button, a.btn {
+    min-height: 44px;
+    min-width: 44px;
+  }
+}
