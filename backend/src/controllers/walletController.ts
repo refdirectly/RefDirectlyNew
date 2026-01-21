@@ -23,15 +23,30 @@ export const getWallet = async (req: Request, res: Response) => {
 export const addFunds = async (req: Request, res: Response) => {
   try {
     const userId = (req as any).user.id;
-    const { amount, paymentId } = req.body;
+    const { amount, razorpay_payment_id, razorpay_order_id, razorpay_signature } = req.body;
 
     if (!amount || amount <= 0) {
       return res.status(400).json({ success: false, message: 'Invalid amount' });
     }
 
-    // TODO: Verify Razorpay payment here
+    if (!razorpay_payment_id || !razorpay_order_id || !razorpay_signature) {
+      return res.status(400).json({ success: false, message: 'Payment verification failed. Missing payment details.' });
+    }
+
+    // Verify Razorpay payment signature
+    const crypto = require('crypto');
+    const razorpaySecret = process.env.RAZORPAY_KEY_SECRET;
     
-    const wallet = await walletService.addFunds(userId, amount, `Payment ID: ${paymentId}`);
+    const generatedSignature = crypto
+      .createHmac('sha256', razorpaySecret)
+      .update(`${razorpay_order_id}|${razorpay_payment_id}`)
+      .digest('hex');
+
+    if (generatedSignature !== razorpay_signature) {
+      return res.status(400).json({ success: false, message: 'Payment verification failed. Invalid signature.' });
+    }
+    
+    const wallet = await walletService.addFunds(userId, amount, `Razorpay Payment: ${razorpay_payment_id}`);
     
     res.json({
       success: true,

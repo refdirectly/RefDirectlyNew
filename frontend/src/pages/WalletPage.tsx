@@ -57,28 +57,75 @@ const WalletPage: React.FC = () => {
     setProcessing(true);
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/wallet/add-funds`, {
+      const amountInPaise = parseFloat(amount) * 100;
+
+      // Create Razorpay order
+      const orderResponse = await fetch(`${import.meta.env.VITE_API_URL}/api/payment/create-order`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ amount: parseFloat(amount), paymentId: 'razorpay_' + Date.now() })
+        body: JSON.stringify({ amount: parseFloat(amount) })
       });
-      
-      const data = await response.json();
-      if (data.success) {
-        await fetchWallet();
-        setShowAddFunds(false);
-        setAmount('');
-        alert(`✅ Successfully added ₹${parseFloat(amount).toLocaleString()} to your wallet!`);
-      } else {
-        alert(data.message || 'Failed to add funds');
+
+      const orderData = await orderResponse.json();
+      if (!orderData.success) {
+        alert('Failed to create payment order');
+        setProcessing(false);
+        return;
       }
+
+      // Initialize Razorpay
+      const options = {
+        key: import.meta.env.VITE_RAZORPAY_KEY_ID,
+        amount: amountInPaise,
+        currency: 'INR',
+        name: 'RefDirectly',
+        description: 'Add funds to wallet',
+        order_id: orderData.orderId,
+        handler: async function (response: any) {
+          // Verify payment and add funds
+          const verifyResponse = await fetch(`${import.meta.env.VITE_API_URL}/api/wallet/add-funds`, {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${token}`,
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+              amount: parseFloat(amount),
+              razorpay_payment_id: response.razorpay_payment_id,
+              razorpay_order_id: response.razorpay_order_id,
+              razorpay_signature: response.razorpay_signature
+            })
+          });
+
+          const data = await verifyResponse.json();
+          if (data.success) {
+            await fetchWallet();
+            setShowAddFunds(false);
+            setAmount('');
+            alert(`✅ Successfully added ₹${parseFloat(amount).toLocaleString()} to your wallet!`);
+          } else {
+            alert(data.message || 'Payment verification failed');
+          }
+          setProcessing(false);
+        },
+        modal: {
+          ondismiss: function() {
+            setProcessing(false);
+          }
+        },
+        theme: {
+          color: '#8B5CF6'
+        }
+      };
+
+      const razorpay = new (window as any).Razorpay(options);
+      razorpay.open();
     } catch (error) {
       console.error('Add funds error:', error);
       alert('Failed to add funds. Please try again.');
-    } finally {
       setProcessing(false);
     }
   };

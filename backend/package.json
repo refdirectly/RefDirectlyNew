@@ -42,6 +42,7 @@
     "puppeteer": "^24.31.0",
     "puppeteer-extra": "^3.3.6",
     "puppeteer-extra-plugin-stealth": "^2.11.2",
+    "razorpay": "^2.9.6",
     "socket.io": "^4.7.5",
     "string-similarity": "^4.0.4",
     "stripe": "^14.9.0",

@@ -12,7 +12,13 @@ class WalletService {
       let wallet = await Wallet.findOne({ userId }).session(session);
       
       if (!wallet) {
-        wallet = new Wallet({ userId, totalBalance: 0, freeBalance: 0, lockedBalance: 0, transactions: [] });
+        wallet = new Wallet({ 
+          userId: new mongoose.Types.ObjectId(userId), 
+          totalBalance: 0, 
+          freeBalance: 0, 
+          lockedBalance: 0, 
+          transactions: [] 
+        });
       }
 
       wallet.totalBalance += amount;
@@ -140,7 +146,7 @@ class WalletService {
       
       if (!referrerWallet) {
         referrerWallet = new Wallet({ 
-          userId: escrow.referrerId, 
+          userId: new mongoose.Types.ObjectId(escrow.referrerId), 
           totalBalance: 0, 
           freeBalance: 0, 
           lockedBalance: 0, 
@@ -240,7 +246,13 @@ class WalletService {
     let wallet = await Wallet.findOne({ userId });
     
     if (!wallet) {
-      wallet = new Wallet({ userId, totalBalance: 0, freeBalance: 0, lockedBalance: 0, transactions: [] });
+      wallet = new Wallet({ 
+        userId: new mongoose.Types.ObjectId(userId), 
+        totalBalance: 0, 
+        freeBalance: 0, 
+        lockedBalance: 0, 
+        transactions: [] 
+      });
       await wallet.save();
     }
     
