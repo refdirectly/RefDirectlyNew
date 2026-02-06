@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Menu, X, User, LogOut, LayoutDashboard, Wallet, Briefcase, FileText, ChevronDown, Bell, CheckCircle } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
-import NotificationBell from './NotificationBell';
+import NotificationDropdown from './NotificationDropdown';
 
 const Logo = () => (
   <Link to="/" className="flex items-center gap-2">
@@ -20,6 +20,12 @@ const NavLinks = ({ className, isLoggedIn, userRole, showResumeDropdown, setShow
           <Link to="/referrer/earnings" className="px-4 py-2 rounded-full text-gray-700 hover:text-white hover:bg-gradient-to-r hover:from-brand-teal hover:to-brand-purple font-semibold transition-all duration-300 hover:scale-105 hover:shadow-lg">Earnings</Link>
           <Link to="/referrer/wallet" className="px-4 py-2 rounded-full text-gray-700 hover:text-white hover:bg-gradient-to-r hover:from-brand-purple hover:to-brand-magenta font-semibold transition-all duration-300 hover:scale-105 hover:shadow-lg">Wallet</Link>
           <Link to="/post-job" className="px-4 py-2 rounded-full text-gray-700 hover:text-white hover:bg-gradient-to-r hover:from-brand-magenta hover:to-brand-teal font-semibold transition-all duration-300 hover:scale-105 hover:shadow-lg">Post Job</Link>
+        </>
+      ) : userRole === 'company_hr' ? (
+        <>
+          <Link to="/hr/dashboard" className="px-4 py-2 rounded-full text-gray-700 hover:text-white hover:bg-gradient-to-r hover:from-orange-500 hover:to-pink-500 font-semibold transition-all duration-300 hover:scale-105 hover:shadow-lg">Dashboard</Link>
+          <Link to="/hr/sessions" className="px-4 py-2 rounded-full text-gray-700 hover:text-white hover:bg-gradient-to-r hover:from-pink-500 hover:to-purple-500 font-semibold transition-all duration-300 hover:scale-105 hover:shadow-lg">My Sessions</Link>
+          <Link to="/notifications" className="px-4 py-2 rounded-full text-gray-700 hover:text-white hover:bg-gradient-to-r hover:from-purple-500 hover:to-orange-500 font-semibold transition-all duration-300 hover:scale-105 hover:shadow-lg">Notifications</Link>
         </>
       ) : (
         <>
@@ -59,6 +65,7 @@ const NavLinks = ({ className, isLoggedIn, userRole, showResumeDropdown, setShow
             )}
           </div>
           <Link to="/ai-apply" className="px-4 py-2 rounded-full text-gray-700 hover:text-white hover:bg-gradient-to-r hover:from-brand-purple hover:to-brand-teal font-semibold transition-all duration-300 hover:scale-105 hover:shadow-lg">AI Apply</Link>
+          <Link to="/career" className="px-4 py-2 rounded-full text-gray-700 hover:text-white hover:bg-gradient-to-r hover:from-brand-teal hover:to-brand-magenta font-semibold transition-all duration-300 hover:scale-105 hover:shadow-lg">Career</Link>
           <Link to="/seeker/wallet" className="px-4 py-2 rounded-full text-gray-700 hover:text-white hover:bg-gradient-to-r hover:from-brand-magenta hover:to-brand-purple font-semibold transition-all duration-300 hover:scale-105 hover:shadow-lg">Wallet</Link>
         </>
       )
@@ -93,8 +100,13 @@ const Header: React.FC = () => {
 
   useEffect(() => {
     const userData = localStorage.getItem('user');
-    if (userData) {
-      setUser(JSON.parse(userData));
+    if (userData && userData !== 'undefined') {
+      try {
+        setUser(JSON.parse(userData));
+      } catch (error) {
+        console.error('Failed to parse user data:', error);
+        localStorage.removeItem('user');
+      }
     }
   }, []);
 
@@ -121,7 +133,7 @@ const Header: React.FC = () => {
           <div className="hidden md:flex items-center gap-3">
             {user ? (
               <>
-                <NotificationBell />
+                <NotificationDropdown />
                 <div className="relative">
                 <button
                   onClick={() => setShowDropdown(!showDropdown)}
@@ -139,7 +151,7 @@ const Header: React.FC = () => {
                     className="absolute right-0 mt-2 w-56 bg-white/95 backdrop-blur-xl rounded-2xl shadow-2xl border border-gray-200/50 py-2 overflow-hidden"
                   >
                     <Link
-                      to={user.role === 'referrer' ? '/referrer/dashboard' : '/seeker/dashboard'}
+                      to={user.role === 'referrer' ? '/referrer/dashboard' : user.role === 'company_hr' ? '/hr/dashboard' : '/seeker/dashboard'}
                       onClick={() => setShowDropdown(false)}
                       className="flex items-center gap-3 px-4 py-3 hover:bg-gradient-to-r hover:from-brand-purple/10 hover:to-brand-magenta/10 transition-all duration-200 group"
                     >
@@ -148,16 +160,18 @@ const Header: React.FC = () => {
                       </div>
                       <span className="text-gray-800 font-medium">Dashboard</span>
                     </Link>
-                    <Link
-                      to={user.role === 'referrer' ? '/referrer/wallet' : '/seeker/wallet'}
-                      onClick={() => setShowDropdown(false)}
-                      className="flex items-center gap-3 px-4 py-3 hover:bg-gradient-to-r hover:from-brand-teal/10 hover:to-brand-purple/10 transition-all duration-200 group"
-                    >
-                      <div className="h-9 w-9 rounded-lg bg-gradient-to-r from-brand-teal to-brand-purple flex items-center justify-center group-hover:scale-110 transition-transform">
-                        <Wallet className="h-4 w-4 text-white" />
-                      </div>
-                      <span className="text-gray-800 font-medium">My Wallet</span>
-                    </Link>
+                    {user.role !== 'company_hr' && (
+                      <Link
+                        to={user.role === 'referrer' ? '/referrer/wallet' : '/seeker/wallet'}
+                        onClick={() => setShowDropdown(false)}
+                        className="flex items-center gap-3 px-4 py-3 hover:bg-gradient-to-r hover:from-brand-teal/10 hover:to-brand-purple/10 transition-all duration-200 group"
+                      >
+                        <div className="h-9 w-9 rounded-lg bg-gradient-to-r from-brand-teal to-brand-purple flex items-center justify-center group-hover:scale-110 transition-transform">
+                          <Wallet className="h-4 w-4 text-white" />
+                        </div>
+                        <span className="text-gray-800 font-medium">My Wallet</span>
+                      </Link>
+                    )}
                     {user.role === 'referrer' && (
                       <Link
                         to="/post-job"
@@ -224,7 +238,7 @@ const Header: React.FC = () => {
                   <p className="text-gray-700 font-medium">{user.name}</p>
                   <p className="text-sm text-gray-500">{user.email}</p>
                 </div>
-                <Link to={user.role === 'referrer' ? '/referrer/dashboard' : '/seeker/dashboard'} onClick={() => setIsMenuOpen(false)} className="text-gray-700 hover:text-brand-purple font-medium transition-all duration-200">Dashboard</Link>
+                <Link to={user.role === 'referrer' ? '/referrer/dashboard' : user.role === 'company_hr' ? '/hr/dashboard' : '/seeker/dashboard'} onClick={() => setIsMenuOpen(false)} className="text-gray-700 hover:text-brand-purple font-medium transition-all duration-200">Dashboard</Link>
                 <button onClick={handleLogout} className="text-red-600 hover:text-red-700 font-medium transition-all duration-200">Logout</button>
               </>
             ) : (

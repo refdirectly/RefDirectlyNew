@@ -22,7 +22,7 @@ const AdminLoginPage: React.FC = () => {
     }
 
     try {
-      const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+      const API_URL = import.meta.env.VITE_API_URL || 'https://refdirectly-1.onrender.com';
       
       if (isSignup) {
         // Signup
@@ -53,7 +53,14 @@ const AdminLoginPage: React.FC = () => {
         });
         
         const data = await res.json();
-        if (!res.ok) throw new Error(data.error || 'Login failed');
+        
+        if (!res.ok) {
+          // Show specific error messages
+          if (res.status === 401) {
+            throw new Error('Invalid email or password. Please check your credentials.');
+          }
+          throw new Error(data.message || 'Login failed');
+        }
         
         if (data.user.role !== 'admin') {
           throw new Error('Access denied. Admin privileges required.');
@@ -139,9 +146,9 @@ const AdminLoginPage: React.FC = () => {
 
           {!isSignup && (
             <div className="mt-4 text-center">
-              <Link to="/forgot-password" className="text-sm text-purple-600 hover:text-purple-700">
-                Forgot password?
-              </Link>
+              <p className="text-sm text-gray-500">
+                Contact admin to reset password
+              </p>
             </div>
           )}
 

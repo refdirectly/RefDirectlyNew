@@ -37,13 +37,26 @@ const ReferrerRequestsPage: React.FC = () => {
     setLoading(true);
     setError('');
     try {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        navigate('/auth/login');
+        return;
+      }
+
       const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
       const response = await fetch(`${API_URL}/api/referrals/referrer${filter !== 'all' ? `?status=${filter}` : ''}`, {
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
+          'Authorization': `Bearer ${token}`
         }
       });
+      
+      if (response.status === 401) {
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        navigate('/auth/login');
+        return;
+      }
       
       if (!response.ok) {
         throw new Error(`API error: ${response.status}`);

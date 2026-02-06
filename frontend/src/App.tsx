@@ -1,5 +1,6 @@
 import React from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { NotificationProvider } from './contexts/NotificationContext';
 import Header from './components/Header';
 import Hero from './components/Hero';
 import Stats from './components/Stats';
@@ -53,6 +54,17 @@ import CheckoutPage from './pages/CheckoutPage';
 import Chatbot from './components/Chatbot';
 import BlogPage from './pages/BlogPage';
 import NotificationsPage from './pages/NotificationsPage';
+import CareerGuidancePage from './pages/CareerGuidancePage';
+import ReferralHRChatPage from './pages/ReferralHRChatPage';
+import HRChatsPage from './pages/HRChatsPage';
+import HRExpertsPage from './pages/HRExpertsPage';
+import HRSessionBookingPage from './pages/HRSessionBookingPage';
+import HRSessionRoomPage from './pages/HRSessionRoomPage';
+import CompanyHRDashboard from './pages/CompanyHRDashboard';
+import HRSignupPage from './pages/HRSignupPage';
+import HRSessionsPage from './pages/HRSessionsPage';
+import HRLoginPage from './pages/HRLoginPage';
+import AdminHRVerificationPage from './pages/AdminHRVerificationPage';
 import { PressPage, HelpCenterPage, CommunityPage, APIDocsPage, PrivacyPolicyPage, TermsOfServicePage, CookiePolicyPage, DisclaimerPage, CareersPage } from './pages/PlaceholderPages';
 import ScrollToTop from './components/ScrollToTop';
 
@@ -76,8 +88,9 @@ function LandingPage() {
 function App() {
   return (
     <BrowserRouter>
-      <ScrollToTop />
-      <Chatbot />
+      <NotificationProvider>
+        <ScrollToTop />
+        <Chatbot />
       <Routes>
         {/* Public Routes */}
         <Route path="/" element={<LandingPage />} />
@@ -109,6 +122,8 @@ function App() {
         <Route path="/auth/signup/seeker" element={<SeekerSignupPage />} />
         <Route path="/auth/referrer/login" element={<ReferrerLoginPage />} />
         <Route path="/auth/referrer/signup" element={<ReferrerSignupPage />} />
+        <Route path="/hr/signup" element={<HRSignupPage />} />
+        <Route path="/hr/login" element={<HRLoginPage />} />
         <Route path="/auth/callback" element={<AuthCallbackPage />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/reset-password/:token" element={<ResetPassword />} />
@@ -128,6 +143,14 @@ function App() {
         <Route path="/seeker/chat" element={<SeekerChatPage />} />
         <Route path="/seeker/verification" element={<VerificationDashboard />} />
         <Route path="/notifications" element={<NotificationsPage />} />
+        <Route path="/career" element={<CareerGuidancePage />} />
+        <Route path="/career/hrs" element={<HRExpertsPage />} />
+        <Route path="/career/book/:hrId" element={<HRSessionBookingPage />} />
+        <Route path="/hr-session/:sessionId" element={<HRSessionRoomPage />} />
+        <Route path="/referral-hr-chat/:referralId" element={<ReferralHRChatPage />} />
+        <Route path="/hr-chats" element={<HRChatsPage />} />
+        <Route path="/hr/dashboard" element={<CompanyHRDashboard />} />
+        <Route path="/hr/sessions" element={<HRSessionsPage />} />
         <Route path="/chat" element={<ChatPage />} />
         <Route path="/applications" element={<ApplicationsPage />} />
         <Route path="/resume-builder" element={<ResumeBuilder />} />
@@ -145,6 +168,8 @@ function App() {
         {/* Admin Routes */}
         <Route path="/admin/login" element={<AdminLoginPage />} />
         <Route path="/admin/dashboard" element={<AdminDashboard />} />
+        <Route path="/admin/verification" element={<VerificationDashboard />} />
+        <Route path="/admin/hr-verification" element={<AdminHRVerificationPage />} />
         <Route path="/admin/scraper" element={<AdminJobScraper />} />
         <Route path="/admin/sales" element={<SalesDashboard />} />
         <Route path="/admin/ai-calling" element={<AICallingDashboard />} />
@@ -163,6 +188,7 @@ function App() {
         <Route path="/find-referrer" element={<FindReferrerPage />} />
         <Route path="/company/:companyId" element={<CompanyPage />} />
       </Routes>
+      </NotificationProvider>
     </BrowserRouter>
   );
 }

@@ -1,121 +1,231 @@
-# Real-Time Notification System
+# Instagram-Style Real-Time Notification System
 
-## 🚀 Quick Start
+## Overview
+Production-ready real-time notification system with instant delivery, toast notifications, dropdown panel, badge counts, and smart UX rules.
 
-### Backend Setup
+## Features Implemented
 
-1. **Install dependencies**
-```bash
-npm install socket.io jsonwebtoken
-```
+### ✅ Backend Enhancements
+1. **Enhanced Notification Model** (`backend/src/models/Notification.ts`)
+   - Added `senderId` field for sender tracking
+   - Added `avatarUrl` for sender avatar
+   - Added `mention` and `referral` notification types
+   - Support for `company_hr` role
 
-2. **Update server.ts**
-```typescript
-import { setupSocket } from './config/socket';
-import notificationRoutes from './routes/notificationRoutes';
+2. **Enhanced Notification Service** (`backend/src/services/notificationService.ts`)
+   - Emits `notification:new` with full notification data
+   - Emits `notification:count` for real-time badge updates
+   - Auto-updates count when marking as read
+   - Supports sender information in notifications
 
-// Add routes
-app.use('/api/notifications', notificationRoutes);
+3. **Socket.IO Events** (`backend/src/config/socket.ts`)
+   - `notification:new` - New notification received
+   - `notification:count` - Unread count update
+   - `notification:read` - Mark notification as read
+   - JWT authentication on socket connection
 
-// Setup socket after creating HTTP server
-const httpServer = createServer(app);
-setupSocket(httpServer);
+### ✅ Frontend Components
 
-httpServer.listen(PORT);
-```
+1. **NotificationDropdown** (`frontend/src/components/NotificationDropdown.tsx`)
+   - Instagram-style dropdown panel
+   - Grouped by time (Today, Yesterday, Older)
+   - Animated badge with pulse effect
+   - Mark all as read functionality
+   - Click to navigate to related content
+   - Sound notification on new message
+   - Browser notification support
+   - Smooth animations with Framer Motion
 
-3. **Environment variables**
-```
-JWT_SECRET=your_secret_key
-FRONTEND_URL=http://localhost:3000
-```
+2. **NotificationToast** (`frontend/src/components/NotificationToast.tsx`)
+   - Auto-dismiss after 5 seconds
+   - Appears at top-right
+   - Click to navigate
+   - Smooth enter/exit animations
+   - Avatar/icon display
 
-### Frontend Setup
+3. **NotificationContext** (`frontend/src/contexts/NotificationContext.tsx`)
+   - Global notification state management
+   - Smart toast suppression logic
+   - Prevents duplicate notifications
+   - Manages toast queue
 
-1. **Install dependencies**
-```bash
-npm install socket.io-client framer-motion lucide-react
-```
+### ✅ Smart UX Rules
 
-2. **Add NotificationBell to Header**
-```tsx
-import NotificationBell from './components/NotificationBell';
+1. **Toast Suppression**
+   - Don't show message toast if user is in that chat
+   - Don't show referral toast if user is on dashboard
+   - Prevents notification spam
 
-<Header>
-  <NotificationBell />
-</Header>
-```
+2. **Real-Time Updates**
+   - Badge count updates instantly
+   - Notifications appear without refresh
+   - Syncs across multiple tabs via Socket.IO
 
-## 📡 Socket Events
+3. **Visual Feedback**
+   - Unread notifications highlighted with purple background
+   - Purple dot indicator for unread items
+   - Animated badge with bounce effect
+   - Pulse animation on bell icon
+
+4. **Sound & Browser Notifications**
+   - Plays sound only when app is visible
+   - Browser notifications when permission granted
+   - Respects user's notification preferences
+
+## Socket.IO Events
 
 ### Server → Client
-- `new_notification` - New notification received
-- `unread_count` - Updated unread count
-- `broadcast_notification` - Admin broadcast
+```typescript
+socket.emit('notification:new', {
+  id: string,
+  senderId?: string,
+  title: string,
+  message: string,
+  type: string,
+  entityId?: string,
+  avatarUrl?: string,
+  isRead: boolean,
+  createdAt: Date
+});
+
+socket.emit('notification:count', number);
+```
 
 ### Client → Server
-- Auto-authenticated via JWT in handshake
-
-## 🔒 Security Features
-
-✅ JWT authentication on socket connection
-✅ Role-based room isolation
-✅ User-specific notification filtering
-✅ Database-level access control
-
-## 🎯 Usage Examples
-
-### Trigger notification from any backend service:
 ```typescript
-import notificationService from './services/notificationService';
+socket.emit('notification:read', notificationId);
+```
 
+## API Endpoints
+
+### Existing (Enhanced)
+- `GET /api/notifications` - Get user notifications (paginated)
+- `GET /api/notifications/unread-count` - Get unread count
+- `PATCH /api/notifications/:id/read` - Mark as read
+- `PATCH /api/notifications/mark-all-read` - Mark all as read
+
+## Usage
+
+### 1. Wrap App with NotificationProvider
+```tsx
+import { NotificationProvider } from './contexts/NotificationContext';
+
+<NotificationProvider>
+  <App />
+</NotificationProvider>
+```
+
+### 2. Use NotificationDropdown in Header
+```tsx
+import NotificationDropdown from './components/NotificationDropdown';
+
+<NotificationDropdown />
+```
+
+### 3. Send Notifications from Backend
+```typescript
 await notificationService.create({
-  recipientUserId: userId,
+  senderId: userId,
+  recipientUserId: recipientId,
   recipientRole: 'seeker',
-  title: 'Application Submitted',
-  message: 'Your application has been received',
-  type: 'application',
-  entityId: applicationId
+  title: 'New Message',
+  message: 'You have a new message from John',
+  type: 'message',
+  entityId: chatId,
+  avatarUrl: senderAvatar
 });
 ```
 
-## 📊 Database Indexes
+## Installation
 
-Optimized for fast queries:
-- `recipientUserId + isRead + createdAt`
-- Individual indexes on role, read status
+### Backend
+No additional packages needed - uses existing Socket.IO setup
 
-## 🔄 Fallback Strategy
+### Frontend
+```bash
+cd frontend
+npm install date-fns  # For time formatting
+```
 
-If socket disconnects:
-1. Auto-reconnect (5 attempts)
-2. REST polling every 30s
-3. Fetch on page focus
+## Configuration
 
-## 🎨 UI Features
+### Request Browser Notification Permission
+Add to your app initialization:
+```typescript
+if ('Notification' in window && Notification.permission === 'default') {
+  Notification.requestPermission();
+}
+```
 
-✅ LinkedIn-style dropdown
-✅ Unread badge count
-✅ Mark as read on click
-✅ Mark all as read
-✅ Real-time updates
-✅ Smooth animations
-✅ Mobile responsive
-✅ Click outside to close
+## Performance Optimizations
 
-## 📈 Performance
+1. **Indexed Database Queries**
+   - Compound index on `recipientUserId`, `isRead`, `createdAt`
+   - Fast unread count queries
 
-- Indexed queries < 10ms
-- Socket rooms for targeted delivery
-- Pagination support (20 per page)
-- Lazy loading on scroll
+2. **Socket.IO Rooms**
+   - User-specific rooms (`user:${userId}`)
+   - Role-specific rooms (`role:${role}`)
+   - Efficient message delivery
 
-## 🔧 Customization
+3. **Smart Toast Queue**
+   - Prevents notification spam
+   - Context-aware suppression
+   - Auto-cleanup after dismiss
 
-### Add new notification type:
-1. Update Notification model enum
-2. Add icon in `getIcon()` function
-3. Create trigger function in examples
+## Security
 
-### Add sound notification:
-Place `notification.mp3` in `/public` folder
+1. **JWT Authentication**
+   - Socket connections authenticated via JWT
+   - User-specific rooms prevent unauthorized access
+
+2. **Authorization**
+   - Users can only read their own notifications
+   - Mark as read requires ownership verification
+
+## Testing
+
+### Test Notification Flow
+1. Login as two different users
+2. Send a message from User A to User B
+3. User B should see:
+   - Badge count increase
+   - Toast notification (if not in chat)
+   - Notification in dropdown
+   - Browser notification (if permitted)
+
+### Test Smart Suppression
+1. Open chat with User A
+2. Send message from User A
+3. Toast should NOT appear (user is in chat)
+4. Badge count should still update
+
+## Future Enhancements
+
+- [ ] Notification preferences (mute, DND)
+- [ ] Push notifications for mobile
+- [ ] Email digest for missed notifications
+- [ ] Notification categories/filters
+- [ ] Bulk actions (delete, archive)
+- [ ] Notification history cleanup (cron job)
+
+## Files Modified/Created
+
+### Backend
+- ✅ `backend/src/models/Notification.ts` - Enhanced model
+- ✅ `backend/src/services/notificationService.ts` - Enhanced service
+- ✅ `backend/src/config/socket.ts` - Added notification:read handler
+
+### Frontend
+- ✅ `frontend/src/components/NotificationDropdown.tsx` - NEW
+- ✅ `frontend/src/components/NotificationToast.tsx` - NEW
+- ✅ `frontend/src/contexts/NotificationContext.tsx` - NEW
+- ✅ `frontend/src/components/Header.tsx` - Updated to use NotificationDropdown
+
+## Notes
+
+- Notifications persist in database even when user is offline
+- Socket.IO handles reconnection automatically
+- Toast notifications respect document visibility
+- Browser notifications require user permission
+- Sound plays only when app is in foreground

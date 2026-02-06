@@ -3,7 +3,10 @@ import { Link } from 'react-router-dom';
 import { Mail, ArrowLeft } from 'lucide-react';
 
 const ForgotPassword: React.FC = () => {
+  const [step, setStep] = useState<'email' | 'otp'>('email');
   const [email, setEmail] = useState('');
+  const [otp, setOtp] = useState('');
+  const [newPassword, setNewPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState('');
@@ -14,19 +17,46 @@ const ForgotPassword: React.FC = () => {
     setLoading(true);
 
     try {
-      const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
-      const res = await fetch(`${API_URL}/api/password/forgot-password`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email })
-      });
+      const API_URL = import.meta.env.VITE_API_URL || 'https://refdirectly-1.onrender.com';
+      
+      if (step === 'email') {
+        const res = await fetch(`${API_URL}/api/password/forgot-password`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email })
+        });
 
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Failed to send reset email');
+        const data = await res.json();
+        
+        if (!res.ok) {
+          if (res.status === 404) {
+            throw new Error('No account found with this email address.');
+          }
+          throw new Error(data.message || data.error || 'Failed to send OTP');
+        }
 
-      setSuccess(true);
+        setStep('otp');
+      } else {
+        const res = await fetch(`${API_URL}/api/password/reset-password`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, otp, newPassword })
+        });
+
+        const data = await res.json();
+        
+        if (!res.ok) {
+          throw new Error(data.message || 'Failed to reset password');
+        }
+
+        setSuccess(true);
+      }
     } catch (err: any) {
-      setError(err.message);
+      if (err.message === 'Failed to fetch') {
+        setError('Unable to connect to server. Please check your internet connection or try again later.');
+      } else {
+        setError(err.message);
+      }
     } finally {
       setLoading(false);
     }
@@ -41,7 +71,9 @@ const ForgotPassword: React.FC = () => {
               <Mail className="h-8 w-8 text-white" />
             </div>
             <h1 className="text-3xl font-bold text-gray-900">Forgot Password?</h1>
-            <p className="text-gray-600 mt-2">Enter your email to receive a reset link</p>
+            <p className="text-gray-600 mt-2">
+              {step === 'email' ? 'Enter your email to receive OTP' : 'Enter OTP and new password'}
+            </p>
           </div>
 
           {success ? (
@@ -64,28 +96,66 @@ const ForgotPassword: React.FC = () => {
               )}
 
               <form onSubmit={handleSubmit} className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Email Address</label>
-                  <input
-                    type="email"
-                    required
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    placeholder="your@email.com"
-                  />
-                </div>
+                {step === 'email' ? (
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Email Address</label>
+                    <input
+                      type="email"
+                      required
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      placeholder="your@email.com"
+                    />
+                  </div>
+                ) : (
+                  <>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">OTP Code</label>
+                      <input
+                        type="text"
+                        required
+                        value={otp}
+                        onChange={(e) => setOtp(e.target.value)}
+                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        placeholder="Enter 6-digit OTP"
+                        maxLength={6}
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">New Password</label>
+                      <input
+                        type="password"
+                        required
+                        value={newPassword}
+                        onChange={(e) => setNewPassword(e.target.value)}
+                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        placeholder="Enter new password"
+                        minLength={6}
+                      />
+                    </div>
+                  </>
+                )}
 
                 <button
                   type="submit"
                   disabled={loading}
                   className="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white py-3 rounded-lg font-semibold hover:shadow-lg transition-all disabled:opacity-50"
                 >
-                  {loading ? 'Sending...' : 'Send Reset Link'}
+                  {loading ? 'Processing...' : step === 'email' ? 'Send OTP' : 'Reset Password'}
                 </button>
               </form>
 
               <div className="mt-6 text-center">
+                {step === 'otp' && (
+                  <button
+                    onClick={() => { setStep('email'); setOtp(''); setNewPassword(''); setError(''); }}
+                    className="text-blue-600 hover:text-blue-700 font-medium flex items-center justify-center gap-2 mx-auto mb-4"
+                  >
+                    <ArrowLeft className="h-4 w-4" />
+                    Change Email
+                  </button>
+                )}
                 <Link to="/login" className="text-blue-600 hover:text-blue-700 font-medium flex items-center justify-center gap-2">
                   <ArrowLeft className="h-4 w-4" />
                   Back to Login

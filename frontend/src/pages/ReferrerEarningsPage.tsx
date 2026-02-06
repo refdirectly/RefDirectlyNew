@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import { TrendingUp, Download, CheckCircle, Clock, DollarSign, ArrowUpRight, Filter, Search } from 'lucide-react';
+import { TrendingUp, Download, CheckCircle, Clock, DollarSign, ArrowUpRight, Filter, Search, Shield, Eye, AlertTriangle } from 'lucide-react';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
 
@@ -29,6 +29,12 @@ const ReferrerEarningsPage: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<'all' | 'earning' | 'withdrawal'>('all');
   const [searchTerm, setSearchTerm] = useState('');
+  const [verificationStats, setVerificationStats] = useState({
+    pending: 0,
+    underReview: 0,
+    verified: 0,
+    paidOut: 0
+  });
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -105,6 +111,14 @@ const ReferrerEarningsPage: React.FC = () => {
       const allTxns = [...completedTxns, ...pendingTxns];
       console.log('All transactions:', allTxns);
       setTransactions(allTxns.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()));
+      
+      // Calculate verification stats
+      setVerificationStats({
+        pending: referrals.filter((r: any) => r.status === 'pending').length,
+        underReview: referrals.filter((r: any) => r.status === 'accepted' || r.status === 'in_progress').length,
+        verified: referrals.filter((r: any) => r.status === 'completed').length,
+        paidOut: totalEarned
+      });
     } catch (err) {
       console.error('Failed to fetch earnings:', err);
       setWallet({ availableBalance: 0, totalEarned: 0, heldBalance: 0, totalWithdrawn: 0 });
@@ -255,6 +269,85 @@ const ReferrerEarningsPage: React.FC = () => {
               </motion.div>
             ))}
           </div>
+
+          {/* Verification Dashboard Section */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.4 }}
+            className="bg-gradient-to-r from-purple-600 to-pink-600 rounded-2xl p-6 sm:p-8 shadow-2xl mb-8 sm:mb-12"
+          >
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
+              <div>
+                <div className="flex items-center gap-3 mb-2">
+                  <Shield className="h-8 w-8 text-white" />
+                  <h2 className="font-display text-2xl sm:text-3xl font-bold text-white">Verification Dashboard</h2>
+                </div>
+                <p className="text-white/90 text-sm">AI-powered verification with automated payment processing (10% platform fee)</p>
+              </div>
+              <button
+                onClick={() => navigate('/referrer/verification')}
+                className="flex items-center gap-2 bg-white text-purple-600 px-6 py-3 rounded-xl font-semibold hover:shadow-lg transition-all hover:scale-105"
+              >
+                <Eye className="h-5 w-5" />
+                Open Dashboard
+              </button>
+            </div>
+            
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+              <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/20">
+                <div className="flex items-center gap-3 mb-3">
+                  <div className="h-10 w-10 rounded-lg bg-yellow-500/20 flex items-center justify-center">
+                    <Clock className="h-5 w-5 text-yellow-300" />
+                  </div>
+                  <div>
+                    <p className="text-white/80 text-xs">Pending</p>
+                    <p className="text-3xl font-bold text-white">{verificationStats.pending}</p>
+                  </div>
+                </div>
+                <p className="text-white/60 text-xs">Awaiting verification</p>
+              </div>
+              
+              <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/20">
+                <div className="flex items-center gap-3 mb-3">
+                  <div className="h-10 w-10 rounded-lg bg-blue-500/20 flex items-center justify-center">
+                    <AlertTriangle className="h-5 w-5 text-blue-300" />
+                  </div>
+                  <div>
+                    <p className="text-white/80 text-xs">Under Review</p>
+                    <p className="text-3xl font-bold text-white">{verificationStats.underReview}</p>
+                  </div>
+                </div>
+                <p className="text-white/60 text-xs">Being processed</p>
+              </div>
+              
+              <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/20">
+                <div className="flex items-center gap-3 mb-3">
+                  <div className="h-10 w-10 rounded-lg bg-green-500/20 flex items-center justify-center">
+                    <CheckCircle className="h-5 w-5 text-green-300" />
+                  </div>
+                  <div>
+                    <p className="text-white/80 text-xs">Verified</p>
+                    <p className="text-3xl font-bold text-white">{verificationStats.verified}</p>
+                  </div>
+                </div>
+                <p className="text-white/60 text-xs">Successfully verified</p>
+              </div>
+              
+              <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/20">
+                <div className="flex items-center gap-3 mb-3">
+                  <div className="h-10 w-10 rounded-lg bg-emerald-500/20 flex items-center justify-center">
+                    <DollarSign className="h-5 w-5 text-emerald-300" />
+                  </div>
+                  <div>
+                    <p className="text-white/80 text-xs">Paid Out</p>
+                    <p className="text-2xl font-bold text-white">₹{verificationStats.paidOut.toLocaleString('en-IN')}</p>
+                  </div>
+                </div>
+                <p className="text-white/60 text-xs">Total disbursed</p>
+              </div>
+            </div>
+          </motion.div>
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 sm:gap-8 mb-8 sm:mb-12">
             <div className="lg:col-span-2">

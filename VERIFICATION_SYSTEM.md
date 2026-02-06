@@ -1,345 +1,217 @@
-# Employee Verification System - Production Level
+# Referral Verification System
 
 ## Overview
-Multi-method employee verification system with auto-approval scoring for companies that don't provide corporate email addresses.
+Production-level AI-powered referral verification system with admin dashboard, evidence management, dispute handling, and automated payment processing.
 
-## Verification Methods
+## Features
 
-### 1. **Work Email Verification** (40 points)
-**Best for:** Companies with corporate email domains
+### 🎯 Core Features
+- **AI-Powered Verification**: Automated analysis with confidence scoring and fraud detection
+- **Evidence Management**: Upload and track multiple evidence types (screenshots, emails, offer letters, etc.)
+- **Admin Dashboard**: Comprehensive stats and manual review capabilities
+- **Dispute System**: Users can raise disputes with admin resolution
+- **Payment Processing**: Automated payment with 10% platform fee
+- **Timeline Tracking**: Complete audit trail of all verification stages
+- **Real-time Updates**: Live status updates and notifications
 
-**Process:**
-- User enters work email (e.g., john@google.com)
-- System validates email domain against company
-- OTP sent to work email
-- User verifies OTP
-- Auto-approved if domain matches
+### 👥 User Roles
+- **Seeker**: Submit evidence, track verification status, raise disputes
+- **Referrer**: Submit evidence, track payment status
+- **Admin**: Manual review, approve/reject verifications, view analytics
 
-**Supported Companies:**
-- Google (@google.com, @alphabet.com)
-- Microsoft (@microsoft.com)
-- Amazon (@amazon.com, @aws.amazon.com)
-- Meta (@meta.com, @fb.com, @facebook.com)
-- Apple (@apple.com)
-- Netflix, Tesla, Adobe, Salesforce, LinkedIn, Uber, Airbnb, Spotify
-- TCS, Infosys, Wipro, HCL, Tech Mahindra, Cognizant, Accenture, Capgemini
+## API Endpoints
 
-**API Endpoint:**
+### User Endpoints
 ```
-POST /api/verification/email/send
-Body: { workEmail, company }
-
-POST /api/verification/email/verify
-Body: { verificationId, otp }
-```
-
----
-
-### 2. **GitHub Verification** (20 points)
-**Best for:** Tech companies, startups, developers
-
-**Process:**
-- User provides GitHub username
-- System fetches public profile via GitHub API
-- Checks if company field matches target company
-- Auto-approved if company matches
-
-**Example:**
-```javascript
-// GitHub profile shows: "Company: @google"
-// Target company: "Google"
-// Result: Auto-approved ✅
-```
-
-**API Endpoint:**
-```
-POST /api/verification/github
-Body: { githubUsername, company }
-```
-
-**Real GitHub API Integration:**
-```javascript
-const response = await axios.get(`https://api.github.com/users/${username}`);
-// Returns: { company: "@google", email: "john@google.com", ... }
-```
-
----
-
-### 3. **LinkedIn Verification** (30 points)
-**Best for:** All professionals with LinkedIn profiles
-
-**Process:**
-- User provides LinkedIn profile URL
-- System extracts username
-- Admin manually verifies current position matches company
-- OR integrate LinkedIn API for auto-verification
-
-**API Endpoint:**
-```
-POST /api/verification/linkedin
-Body: { linkedinProfile, company }
-```
-
-**Future Enhancement:**
-- LinkedIn OAuth integration
-- Auto-fetch current position from LinkedIn API
-- Match company name automatically
-
----
-
-### 4. **Document Verification** (10 points)
-**Best for:** Companies without email domains, contractors, freelancers
-
-**Documents Accepted:**
-- Employee ID Card
-- Offer Letter
-- Recent Payslip (last 3 months)
-- Government ID with company badge
-
-**Process:**
-- User uploads documents (max 10MB each)
-- Admin reviews within 24-48 hours
-- Approved if documents are valid
-
-**API Endpoint:**
-```
-POST /api/verification/documents
-FormData: {
-  company,
-  employeeId,
-  department,
-  designation,
-  joiningDate,
-  files: [employeeIdCard, offerLetter, payslip]
-}
-```
-
----
-
-## Auto-Approval Scoring System
-
-### Scoring Logic
-```javascript
-Email Verified:     40 points
-LinkedIn Verified:  30 points
-GitHub Verified:    20 points
-Documents Uploaded: 10 points
-----------------------------
-Total:             100 points
-```
-
-### Auto-Approval Rules
-- **Score >= 70**: Auto-approved ✅
-- **Score < 70**: Manual admin review required ⏳
-
-### Examples
-
-**Scenario 1: Tech Employee with GitHub**
-```
-✅ Work Email Verified: 40 points
-✅ GitHub Verified:     20 points
-❌ LinkedIn:            0 points
-❌ Documents:           0 points
------------------------------------
-Total: 60 points → Manual Review
-```
-
-**Scenario 2: Professional with LinkedIn**
-```
-✅ Work Email Verified: 40 points
-✅ LinkedIn Verified:   30 points
-❌ GitHub:              0 points
-❌ Documents:           0 points
------------------------------------
-Total: 70 points → AUTO-APPROVED ✅
-```
-
-**Scenario 3: Contractor without Email**
-```
-❌ Work Email:          0 points
-✅ LinkedIn Verified:   30 points
-✅ GitHub Verified:     20 points
-✅ Documents Uploaded:  10 points
------------------------------------
-Total: 60 points → Manual Review
-```
-
----
-
-## API Endpoints Summary
-
-### Referrer Endpoints
-```
-POST   /api/verification/email/send       - Send work email OTP
-POST   /api/verification/email/verify     - Verify work email OTP
-POST   /api/verification/linkedin         - Submit LinkedIn profile
-POST   /api/verification/github           - Verify GitHub profile
-POST   /api/verification/documents        - Upload documents
-GET    /api/verification/status           - Get verification status
+GET    /api/verification/user/all          - Get user's verifications
+GET    /api/verification/:id               - Get verification details
+POST   /api/verification/create            - Create new verification
+POST   /api/verification/:id/evidence      - Submit evidence
+PUT    /api/verification/:id/stage         - Update verification stage
+POST   /api/verification/:id/verify-and-pay - Request payment processing
+POST   /api/verification/:id/dispute       - Raise dispute
 ```
 
 ### Admin Endpoints
 ```
-GET    /api/verification/pending          - Get pending verifications
-PUT    /api/verification/:id/review       - Approve/Reject verification
+GET    /api/verification/admin/stats       - Get verification statistics
+POST   /api/verification/:id/manual-review - Approve/reject verification
 ```
 
----
+## Data Models
 
-## Database Schema
+### Verification Status
+- `pending` - Initial state
+- `under_review` - Evidence submitted, awaiting review
+- `verified` - Approved by AI or admin
+- `rejected` - Rejected by admin
+- `disputed` - Dispute raised
 
-```typescript
-interface IEmployeeVerification {
-  userId: ObjectId;
-  company: string;
-  verificationType: 'email' | 'document' | 'linkedin' | 'github' | 'manual';
-  status: 'pending' | 'approved' | 'rejected';
-  
-  // Email verification
-  workEmail?: string;
-  emailVerified?: boolean;
-  
-  // Document verification
-  documents?: {
-    idCard?: string;
-    offerLetter?: string;
-    payslip?: string;
-    employeeIdCard?: string;
-  };
-  
-  // LinkedIn verification
-  linkedinProfile?: string;
-  linkedinVerified?: boolean;
-  linkedinData?: {
-    currentPosition?: string;
-    currentCompany?: string;
-    verified?: boolean;
-  };
-  
-  // GitHub verification
-  githubUsername?: string;
-  githubVerified?: boolean;
-  githubData?: {
-    company?: string;
-    email?: string;
-    verified?: boolean;
-  };
-  
-  // Metadata
-  verificationScore: number; // 0-100
-  autoVerified: boolean;
-  submittedAt: Date;
-  reviewedAt?: Date;
-  reviewedBy?: ObjectId;
-  rejectionReason?: string;
-}
+### Verification Stages
+- `referral_sent` - Referral submitted
+- `interview_scheduled` - Interview confirmed
+- `offer_received` - Offer letter received
+- `joined` - Candidate joined company
+- `completed` - Probation completed
+
+### Evidence Types
+- `screenshot` - Application/email screenshots
+- `email` - Email confirmations
+- `offer_letter` - Official offer letter
+- `joining_letter` - Joining confirmation
+- `payslip` - Salary proof
+- `other` - Other supporting documents
+
+## AI Analysis
+
+### Confidence Scoring
+- **85%+**: Auto-verified (low fraud risk)
+- **50-84%**: Manual review required
+- **<50%**: High fraud risk, manual review required
+
+### Fraud Risk Levels
+- **Low**: High confidence, minimal red flags
+- **Medium**: Some concerns, needs review
+- **High**: Multiple red flags, requires investigation
+
+### Evidence Quality
+- **Excellent**: Complete documentation, verified sources
+- **Good**: Sufficient documentation
+- **Fair**: Minimal documentation
+- **Poor**: Insufficient or questionable evidence
+
+## Payment Processing
+
+### Fee Structure
+- Total Reward: Set by referrer
+- Platform Fee: 10% of total
+- Referrer Receives: 90% of total
+
+### Payment Status
+- `pending` - Awaiting verification
+- `processing` - Payment in progress
+- `completed` - Payment successful
+- `failed` - Payment failed
+
+## Setup & Testing
+
+### 1. Seed Test Data
+```bash
+cd backend
+npx ts-node src/scripts/seedVerifications.ts
 ```
 
----
+### 2. Access Dashboard
+- **User**: `/admin/verification` or `/seeker/verification`
+- **Admin**: Login with admin credentials
+
+### 3. Test Workflow
+1. Create verification for a referral
+2. Submit evidence (multiple types)
+3. AI analyzes evidence automatically
+4. Admin reviews if needed
+5. Process payment on approval
+
+## Admin Dashboard Features
+
+### Statistics Cards
+- **Total Verifications**: All-time count
+- **Pending**: Awaiting review
+- **Verified**: Approved cases
+- **Total Paid**: Payment amount
+
+### Search & Filters
+- Search by company, role, or name
+- Filter by status (pending, verified, etc.)
+- Filter by stage (referral sent, joined, etc.)
+- Clear filters option
+
+### Verification Cards
+- Status badges with color coding
+- AI confidence progress bar
+- Evidence count
+- Payment amount
+- Auto-verified indicator
+- Manual review indicator
+- Dispute indicator
+
+### Detail Modal
+- Complete verification information
+- AI analysis with recommendations
+- Payment breakdown
+- Evidence list with view links
+- Timeline with audit trail
+- Admin notes
+- Dispute information
+- Action buttons (review, payment, dispute)
 
 ## Security Features
 
-1. **Email Domain Validation**
-   - Checks if email domain matches company
-   - Prevents fake emails
+- ✅ JWT authentication required
+- ✅ Role-based access control
+- ✅ User verification (only seeker/referrer can access their verifications)
+- ✅ Admin-only endpoints protected
+- ✅ Evidence URL validation
+- ✅ Payment transaction tracking
 
-2. **Document Upload Security**
-   - Max file size: 10MB
-   - Allowed formats: JPG, PNG, PDF
-   - Secure filename generation with crypto
+## Error Handling
 
-3. **Rate Limiting**
-   - Prevents spam verification requests
-   - Max 5 attempts per hour
+### Common Errors
+- `404` - Verification not found
+- `403` - Unauthorized access
+- `400` - Invalid data or missing required fields
+- `500` - Server error
 
-4. **Admin Review**
-   - Manual review for low-score verifications
-   - Rejection with reason tracking
+### User-Friendly Messages
+- Evidence submission success/failure
+- Payment processing status
+- Dispute raised confirmation
+- Manual review decision
 
----
+## Best Practices
 
-## Frontend Integration Example
+### For Users
+1. Submit multiple evidence types
+2. Ensure evidence URLs are accessible
+3. Provide clear documentation
+4. Raise disputes with detailed reasons
 
-```typescript
-// Send work email verification
-const sendEmailVerification = async (workEmail: string, company: string) => {
-  const response = await fetch('/api/verification/email/send', {
-    method: 'POST',
-    headers: { 
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${token}`
-    },
-    body: JSON.stringify({ workEmail, company })
-  });
-  return response.json();
-};
+### For Admins
+1. Review AI recommendations
+2. Check all evidence before approval
+3. Add detailed admin notes
+4. Investigate disputed cases thoroughly
 
-// Verify GitHub
-const verifyGitHub = async (githubUsername: string, company: string) => {
-  const response = await fetch('/api/verification/github', {
-    method: 'POST',
-    headers: { 
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${token}`
-    },
-    body: JSON.stringify({ githubUsername, company })
-  });
-  return response.json();
-};
+## Performance Optimizations
 
-// Upload documents
-const uploadDocuments = async (formData: FormData) => {
-  const response = await fetch('/api/verification/documents', {
-    method: 'POST',
-    headers: { 'Authorization': `Bearer ${token}` },
-    body: formData
-  });
-  return response.json();
-};
-```
-
----
-
-## Production Deployment Checklist
-
-- [x] Email domain validation
-- [x] GitHub API integration
-- [x] Auto-approval scoring system
-- [x] Document upload with security
-- [x] Admin review panel
-- [ ] LinkedIn OAuth integration
-- [ ] OCR for document verification
-- [ ] Webhook notifications
-- [ ] Analytics dashboard
-
----
+- Indexed database queries
+- Pagination for large datasets
+- Lazy loading of evidence
+- Cached statistics
+- Debounced search
+- Optimized re-renders
 
 ## Future Enhancements
 
-1. **LinkedIn OAuth**
-   - Auto-fetch current employment
-   - Verify company match
-
-2. **OCR Document Verification**
-   - Extract text from ID cards
-   - Validate company name automatically
-
-3. **Video Verification**
-   - Live video call with admin
-   - Show employee ID on camera
-
-4. **Blockchain Verification**
-   - Immutable verification records
-   - Decentralized trust system
-
-5. **AI-Powered Fraud Detection**
-   - Detect fake documents
-   - Flag suspicious patterns
-
----
+- [ ] File upload (not just URLs)
+- [ ] Email notifications
+- [ ] Bulk actions
+- [ ] Export to CSV/PDF
+- [ ] Advanced analytics
+- [ ] Automated reminders
+- [ ] Integration with payment gateways
+- [ ] Mobile app support
 
 ## Support
 
 For issues or questions:
-- Email: support@refdirectly.com
-- Docs: https://docs.refdirectly.com/verification
+1. Check API endpoint responses
+2. Review browser console for errors
+3. Verify authentication token
+4. Contact development team
+
+---
+
+**Version**: 1.0.0  
+**Last Updated**: December 2024  
+**Status**: Production Ready ✅

@@ -39,36 +39,47 @@ export const getUserChats = async (req: Request, res: Response) => {
   try {
     const userId = (req.user as any)?._id;
 
-    // Find all accepted referrals for this user
+    // Find all referrals with chat rooms (not just accepted)
     const referrals = await Referral.find({
       $or: [
         { seekerId: userId },
         { referrerId: userId }
-      ],
-      status: 'accepted'
-    }).sort({ createdAt: -1 });
+      ]
+    }).populate('seekerId referrerId').sort({ createdAt: -1 });
 
-    const chatsWithDetails = referrals.map(ref => {
-      const userRole = ref.seekerId.toString() === userId.toString() ? 'seeker' : 'referrer';
+    const chatsWithDetails = await Promise.all(referrals.map(async (ref) => {
+      // Only include referrals that have a chat room with messages
+      const chatRoom = await ChatRoom.findById(ref._id);
+      if (!chatRoom || !chatRoom.messages || chatRoom.messages.length === 0) {
+        return null;
+      }
+
+      const userRole = ref.seekerId._id.toString() === userId.toString() ? 'seeker' : 'referrer';
+      const otherParticipant = userRole === 'seeker' ? ref.referrerId : ref.seekerId;
+      const lastMessage = chatRoom.messages[chatRoom.messages.length - 1];
 
       return {
         _id: ref._id,
-        referralRequest: {
-          _id: ref._id,
-          company: ref.company,
-          role: ref.role,
-          status: ref.status
+        company: ref.company,
+        otherParticipant: {
+          _id: (otherParticipant as any)._id,
+          name: (otherParticipant as any).name,
+          avatarUrl: (otherParticipant as any).avatarUrl
         },
-        userRole,
-        lastMessage: null,
+        lastMessage: {
+          text: (lastMessage as any).text,
+          createdAt: (lastMessage as any).createdAt,
+          read: (lastMessage as any).read
+        },
         unreadCount: 0
       };
-    });
+    }));
 
-    res.json({ chats: chatsWithDetails });
+    const validChats = chatsWithDetails.filter(chat => chat !== null);
+    res.json({ success: true, chats: validChats });
   } catch (error) {
     console.error('Error fetching user chats:', error);
-    res.status(500).json({ message: 'Server error' });
+    res.status(500).json({ success: false, chats: [], message: 'Server error' });
   }
 };
 
@@ -106,12 +117,14 @@ export const sendMessage = async (req: Request, res: Response) => {
         const preview = text.length > 50 ? text.substring(0, 50) + '...' : text;
         
         await notificationService.create({
+          senderId: (sender as any)._id.toString(),
           recipientUserId: (recipientId as any)._id.toString(),
           recipientRole: recipientRole as 'seeker' | 'referrer',
-          title: `💬 Message from ${senderName}`,
+          title: `💬 ${senderName}`,
           message: preview,
           type: 'message',
-          entityId: roomId
+          entityId: roomId,
+          avatarUrl: (sender as any).avatarUrl
         });
       }
     }

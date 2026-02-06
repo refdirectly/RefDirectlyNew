@@ -89,15 +89,22 @@ RefDirectly is a production-ready, full-stack job referral platform that connect
 - ✅ Request referral with payment
 - ✅ Referral status tracking (pending, accepted, rejected, completed)
 - ✅ Escrow payment protection
+- ✅ **Auto-assign company HR on acceptance** ✨ NEW
+- ✅ **HR chat enabled after acceptance** ✨ NEW
 
 ### **Chat System**
 - ✅ Real-time messaging with Socket.IO
 - ✅ One-on-one chat between seeker and referrer
+- ✅ **Company-specific HR chat flow**
+- ✅ **Auto-assign HR on referral acceptance**
+- ✅ **Private chat between seeker and company HR**
 - ✅ Message history persistence
 - ✅ Typing indicators
 - ✅ Online/offline status
 - ✅ Unread message counts
 - ✅ Chat notifications
+- ✅ **HR dashboard with assigned candidates**
+- ✅ **Real-time HR-seeker communication**
 
 ### **Payment Integration**
 - ✅ Razorpay payment gateway
@@ -470,3 +477,182 @@ For issues, questions, or contributions, please contact the development team.
 **Last Updated**: December 2024
 **Version**: 1.0.0
 **Status**: Production Ready ✅
+
+
+---
+
+## 🏢 Company HR Chat Flow System (NEW)
+
+### Overview
+When a referrer accepts a referral request, the system automatically:
+1. Finds an active HR from the SAME company
+2. Assigns that HR to the referral
+3. Enables a PRIVATE CHAT between job seeker and company HR
+4. Creates a dedicated chat room for communication
+
+### Key Features
+- ✅ **Auto-Assignment**: HR automatically assigned on referral acceptance
+- ✅ **Company-Specific**: HR must belong to same company as referral
+- ✅ **One HR Per Referral**: Single HR assigned to each referral
+- ✅ **Chat After Acceptance**: HR chat only enabled after referral accepted
+- ✅ **Secure Access**: Only seeker and assigned HR can access chat
+- ✅ **Real-Time**: Socket.IO powered instant messaging
+- ✅ **HR Dashboard**: Dedicated dashboard for HR to manage candidates
+
+### User Roles
+1. **job_seeker / seeker** - Requests referrals, chats with HR
+2. **referrer** - Accepts referrals, triggers HR assignment
+3. **company_hr** - Assigned to referrals, chats with seekers ⭐ NEW
+4. **admin** - System administration
+
+### Database Models
+
+#### User Model (Enhanced)
+```typescript
+{
+  role: 'seeker' | 'referrer' | 'company_hr' | 'admin',
+  company: string,        // For company_hr
+  isActive: boolean,      // HR availability
+  // ... other fields
+}
+```
+
+#### Referral Model (Enhanced)
+```typescript
+{
+  companyHRId: ObjectId,     // Auto-assigned
+  hrChatEnabled: boolean,    // Enabled after HR assignment
+  acceptedAt: Date,
+  // ... other fields
+}
+```
+
+#### ReferralChat Model (New)
+```typescript
+{
+  referralId: ObjectId,      // One chat per referral
+  seekerId: ObjectId,
+  hrId: ObjectId,
+  company: string,
+  messages: Array<Message>,
+  lastMessageAt: Date
+}
+```
+
+### API Endpoints
+
+#### Enhanced Referral APIs
+```
+POST   /api/referrals-enhanced/
+PATCH  /api/referrals-enhanced/:id/accept
+GET    /api/referrals-enhanced/seeker
+GET    /api/referrals-enhanced/hr
+```
+
+#### HR Chat APIs
+```
+POST   /api/referrals-enhanced/hr-chat/start
+POST   /api/referrals-enhanced/hr-chat/message
+GET    /api/referrals-enhanced/hr-chat/:referralId/messages
+GET    /api/referrals-enhanced/hr-chat/chats
+```
+
+### Frontend Pages
+
+#### Company HR Dashboard
+- **Route**: `/hr/dashboard`
+- **Features**:
+  - View assigned candidates
+  - Active chats list
+  - Stats dashboard
+  - Quick access to resumes
+  - One-click chat initiation
+
+#### HR Chat Page
+- **Route**: `/referral-hr-chat/:referralId`
+- **Features**:
+  - Real-time messaging
+  - Typing indicators
+  - Message history
+  - Referral context display
+
+#### Job Seeker Dashboard (Enhanced)
+- **Route**: `/dashboard`
+- **New Features**:
+  - "Company HR" button (visible after acceptance)
+  - Direct access to HR chat
+  - Visual indicators for chat availability
+
+### Socket.IO Events
+```typescript
+// HR Chat Events
+join_hr_chat          // Join referral-specific room
+leave_hr_chat         // Leave room
+hr_chat_typing        // Typing indicator
+hr_chat_message       // New message broadcast
+mark_hr_chat_read     // Mark messages as read
+```
+
+### Security Features
+- ✅ JWT authentication on all endpoints
+- ✅ Role-based access control (RBAC)
+- ✅ Company validation (HR can only access their company)
+- ✅ Participant verification (only seeker and assigned HR)
+- ✅ No cross-company access
+- ✅ Secure Socket.IO connections
+
+### Business Rules
+1. HR must belong to SAME company as referral
+2. Only ONE HR per referral
+3. Chat only after referral acceptance
+4. No cross-company access allowed
+5. HR must be active (`isActive: true`)
+
+### Setup & Testing
+
+#### Seed Test HR Users
+```bash
+cd backend
+npx ts-node src/scripts/seedCompanyHRUsers.ts
+```
+
+Creates HR users for: Google, Amazon, Microsoft, Meta, Apple, Netflix, Tesla, Uber, Airbnb, Spotify
+
+**Default Credentials**: `hr@[company].com` / `hr123456`
+
+#### Test Flow
+1. Job Seeker requests referral for Google
+2. Referrer accepts referral
+3. System auto-assigns Google HR
+4. Job Seeker sees "Company HR" button
+5. Both can chat in real-time
+
+### Documentation
+- 📄 **HR_CHAT_FLOW_SYSTEM.md** - Complete technical documentation
+- 📄 **HR_CHAT_QUICKSTART.md** - Quick start guide
+- 📄 **seedCompanyHRUsers.ts** - HR user seeding script
+
+### Performance
+- Indexed queries for fast HR lookup
+- Efficient Socket.IO room management
+- Optimized message retrieval
+- Real-time updates without polling
+
+---
+
+## 📝 Recent Updates
+
+### Latest Session (HR Chat System)
+1. ✅ Enhanced User model with `isActive` and `company` fields
+2. ✅ Enhanced Referral model with `companyHRId` and `hrChatEnabled`
+3. ✅ Created ReferralChat model with validation
+4. ✅ Implemented auto-assign HR on referral acceptance
+5. ✅ Created enhanced referral controller
+6. ✅ Built Socket.IO HR chat handler
+7. ✅ Created Company HR Dashboard page
+8. ✅ Updated Job Seeker Dashboard with HR chat button
+9. ✅ Added real-time messaging functionality
+10. ✅ Implemented security and access controls
+11. ✅ Created comprehensive documentation
+12. ✅ Built HR user seeding script
+

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Briefcase, Users, Zap, TrendingUp, Clock, CheckCircle, LogOut, Wallet, MessageCircle, Sparkles, X } from 'lucide-react';
+import { Briefcase, Users, Zap, TrendingUp, Clock, CheckCircle, LogOut, Wallet, MessageCircle, Sparkles, X, Building2 } from 'lucide-react';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
 import ChatInterface from '../components/ChatInterface';
@@ -255,19 +255,27 @@ const DashboardPage: React.FC = () => {
                                 }`}>
                                   {status === 'in_progress' ? 'In Progress' : status.charAt(0).toUpperCase() + status.slice(1)}
                                 </span>
-
                               </div>
                             </div>
                           </div>
                           <div className="flex items-center gap-2">
                             {status === 'accepted' && (
-                              <button
-                                onClick={() => navigate('/seeker/chat?room=' + request._id)}
-                                className="bg-gradient-to-r from-green-600 to-emerald-600 text-white px-5 py-2.5 rounded-lg font-semibold hover:shadow-lg transition-all text-sm flex items-center gap-2 hover:scale-105"
-                              >
-                                <MessageCircle className="h-4 w-4" />
-                                Open Chat
-                              </button>
+                              <>
+                                <button
+                                  onClick={() => navigate('/seeker/chat?room=' + request._id)}
+                                  className="bg-gradient-to-r from-green-600 to-emerald-600 text-white px-5 py-2.5 rounded-lg font-semibold hover:shadow-lg transition-all text-sm flex items-center gap-2 hover:scale-105"
+                                >
+                                  <MessageCircle className="h-4 w-4" />
+                                  Referrer Chat
+                                </button>
+                                <button
+                                  onClick={() => navigate(`/referral-hr-chat/${request._id}`)}
+                                  className="bg-gradient-to-r from-brand-purple to-brand-magenta text-white px-5 py-2.5 rounded-lg font-semibold hover:shadow-lg transition-all text-sm flex items-center gap-2 hover:scale-105"
+                                >
+                                  <Building2 className="h-4 w-4" />
+                                  Company HR
+                                </button>
+                              </>
                             )}
                             {status === 'pending' && (
                               <div className="text-right">
@@ -388,12 +396,21 @@ const DashboardPage: React.FC = () => {
                     </div>
                   </button>
                   <button
-                    onClick={() => navigate('/seeker/chat')}
+                    onClick={() => navigate('/hr-chats')}
                     className="w-full bg-white/20 hover:bg-white/30 backdrop-blur-sm rounded-xl p-4 text-left transition-all duration-200 hover:scale-105"
                   >
                     <div className="flex items-center gap-3">
                       <MessageCircle className="h-5 w-5" />
-                      <span className="font-semibold">Messages</span>
+                      <span className="font-semibold">Company HR Chat</span>
+                    </div>
+                  </button>
+                  <button
+                    onClick={() => navigate('/career')}
+                    className="w-full bg-white/20 hover:bg-white/30 backdrop-blur-sm rounded-xl p-4 text-left transition-all duration-200 hover:scale-105"
+                  >
+                    <div className="flex items-center gap-3">
+                      <Users className="h-5 w-5" />
+                      <span className="font-semibold">Career Guidance</span>
                     </div>
                   </button>
                 </div>

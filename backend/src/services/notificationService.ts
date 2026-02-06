@@ -9,25 +9,35 @@ class NotificationService {
   }
 
   async create(data: {
+    senderId?: string;
     recipientUserId: string;
-    recipientRole: 'seeker' | 'referrer' | 'admin';
+    recipientRole: 'seeker' | 'referrer' | 'admin' | 'company_hr';
     title: string;
     message: string;
-    type: 'application' | 'message' | 'interview' | 'status_update' | 'system';
+    type: 'application' | 'message' | 'interview' | 'status_update' | 'system' | 'hr_approval' | 'referral' | 'mention';
     entityId?: string;
+    avatarUrl?: string;
+    metadata?: any;
   }): Promise<INotification> {
     const notification = await Notification.create(data);
     
-    // Emit real-time notification
+    // Emit real-time notification with full data
     if (this.io) {
-      this.io.to(`user:${data.recipientUserId}`).emit('new_notification', {
+      const unreadCount = await this.getUnreadCount(data.recipientUserId, data.recipientRole);
+      
+      this.io.to(`user:${data.recipientUserId}`).emit('notification:new', {
         id: notification._id,
+        senderId: notification.senderId,
         title: notification.title,
         message: notification.message,
         type: notification.type,
         entityId: notification.entityId,
+        avatarUrl: notification.avatarUrl,
+        isRead: false,
         createdAt: notification.createdAt
       });
+      
+      this.io.to(`user:${data.recipientUserId}`).emit('notification:count', unreadCount);
     }
     
     return notification;
@@ -49,11 +59,22 @@ class NotificationService {
   }
 
   async markAsRead(notificationId: string, userId: string) {
-    return Notification.findOneAndUpdate(
+    const result = await Notification.findOneAndUpdate(
       { _id: notificationId, recipientUserId: userId },
       { isRead: true },
       { new: true }
     );
+    
+    // Emit updated count
+    if (result && this.io) {
+      const user = await Notification.findById(notificationId).select('recipientRole');
+      if (user) {
+        const unreadCount = await this.getUnreadCount(userId, user.recipientRole as any);
+        this.io.to(`user:${userId}`).emit('notification:count', unreadCount);
+      }
+    }
+    
+    return result;
   }
 
   async markAllAsRead(userId: string, role: string) {
@@ -68,7 +89,7 @@ class NotificationService {
   }
 
   // Broadcast to all users of a role
-  async broadcastToRole(role: 'seeker' | 'referrer' | 'admin', title: string, message: string) {
+  async broadcastToRole(role: 'seeker' | 'referrer' | 'admin' | 'company_hr', title: string, message: string) {
     if (this.io) {
       this.io.to(`role:${role}`).emit('broadcast_notification', { title, message });
     }

@@ -9,10 +9,12 @@ import dotenv from 'dotenv';
 import passport from './config/passport';
 import { createReferralHandler } from './sockets/referral';
 import { createNotificationHandler } from './sockets/notification';
+import { createHRChatHandler } from './sockets/hrChat';
 import { startScheduler } from './utils/scheduler';
 import { startEscrowCron } from './utils/escrowCron';
 import authRoutes from './routes/auth';
 import referralRoutes from './routes/referrals';
+import referralEnhancedRoutes from './routes/referralEnhanced';
 import paymentRoutes from './routes/payments';
 import paymentRoute from './routes/payment';
 import matchingRoutes from './routes/matching';
@@ -37,6 +39,14 @@ import verificationRoutes from './routes/verification';
 import aiCallingRoutes from './routes/aiCalling';
 import salesScheduler from './services/salesScheduler';
 import careerRoutes from './routes/career';
+import careerPackRoutes from './routes/careerPacks';
+import hrSessionRoutes from './routes/hrSession';
+import hrSessions from './routes/hrSessions';
+import faqRoutes from './routes/faqs';
+import testimonialRoutes from './routes/testimonials';
+import referralHRChatRoutes from './routes/referralHRChat';
+import companyHRRoutes from './routes/companyHR';
+import hrRoutes from './routes/hr';
 
 dotenv.config();
 
@@ -108,6 +118,7 @@ app.use('/api/verification', verificationRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api', authRoutes);
 app.use('/api/referrals', referralRoutes);
+app.use('/api/referrals-enhanced', referralEnhancedRoutes);
 app.use('/api/payments', paymentRoutes);
 app.use('/api/payment', paymentRoute);
 app.use('/api/matching', matchingRoutes);
@@ -129,6 +140,14 @@ app.use('/api/subscription', subscriptionRoutes);
 app.use('/api/sales', salesRoutes);
 app.use('/api/ai-calling', aiCallingRoutes);
 app.use('/api/career', careerRoutes);
+app.use('/api/career-packs', careerPackRoutes);
+app.use('/api/hr-session', hrSessionRoutes);
+app.use('/api/hr-sessions', hrSessions);
+app.use('/api/faqs', faqRoutes);
+app.use('/api/testimonials', testimonialRoutes);
+app.use('/api/referral-hr-chat', referralHRChatRoutes);
+app.use('/api/company-hr', companyHRRoutes);
+app.use('/api/hr', hrRoutes);
 
 // Health check
 app.get('/health', (req, res) => {
@@ -142,6 +161,22 @@ io.on('connection', (socket) => {
   console.log('Socket connected:', socket.id);
   createReferralHandler(io, socket);
   createNotificationHandler(io, socket);
+  createHRChatHandler(io, socket);
+  
+  // Generic chat handlers for referral HR chat
+  socket.on('join_chat', (chatId: string) => {
+    socket.join(`chat:${chatId}`);
+    console.log(`Socket ${socket.id} joined chat:${chatId}`);
+  });
+
+  socket.on('leave_chat', (chatId: string) => {
+    socket.leave(`chat:${chatId}`);
+    console.log(`Socket ${socket.id} left chat:${chatId}`);
+  });
+
+  socket.on('send_message', (data: { chatId: string; message: any }) => {
+    socket.to(`chat:${data.chatId}`).emit('new_message', data.message);
+  });
   
   socket.on('disconnect', () => {
     console.log('Socket disconnected:', socket.id);

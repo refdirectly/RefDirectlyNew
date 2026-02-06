@@ -133,6 +133,18 @@ export const verifyUser = async (req: AuthRequest, res: Response) => {
     } catch (emailError) {
       logger.warn('Failed to send verification email:', emailError);
     }
+
+    // Send notification to HR if they are company_hr
+    if (user.role === 'company_hr') {
+      const notificationService = require('../services/notificationService').default;
+      await notificationService.create({
+        recipientUserId: user._id.toString(),
+        recipientRole: 'seeker',
+        title: '✅ Your HR Profile is Now Live!',
+        message: 'Congratulations! Your HR expert profile has been approved. Job seekers can now book sessions with you.',
+        type: 'system'
+      });
+    }
     
     res.json({ success: true, message: 'User verified successfully', user });
   } catch (error: any) {

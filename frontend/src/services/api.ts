@@ -8,20 +8,34 @@ const getAuthHeaders = () => {
   };
 };
 
+const handleResponse = async (response: Response) => {
+  if (response.status === 401) {
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    window.location.href = '/auth/login';
+    throw new Error('Session expired. Please login again.');
+  }
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({ message: 'Request failed' }));
+    throw new Error(error.message || `Request failed with status ${response.status}`);
+  }
+  return response.json();
+};
+
 export const jobsApi = {
   getAll: async (filters?: { search?: string; type?: string; location?: string; skills?: string }) => {
     const params = new URLSearchParams(filters as any);
     const response = await fetch(`${API_URL}/jobs?${params}`);
-    return response.json();
+    return handleResponse(response);
   },
   getLive: async (keywords: string = 'software engineer', location: string = 'United States') => {
     const params = new URLSearchParams({ keywords, location });
     const response = await fetch(`${API_URL}/jobs/live?${params}`);
-    return response.json();
+    return handleResponse(response);
   },
   getById: async (id: string) => {
     const response = await fetch(`${API_URL}/jobs/${id}`);
-    return response.json();
+    return handleResponse(response);
   },
   create: async (job: any) => {
     const response = await fetch(`${API_URL}/jobs`, {
@@ -29,7 +43,7 @@ export const jobsApi = {
       headers: getAuthHeaders(),
       body: JSON.stringify(job)
     });
-    return response.json();
+    return handleResponse(response);
   },
   scrapeAndSave: async (keywords: string, location: string) => {
     const response = await fetch(`${API_URL}/jobs/scrape`, {
@@ -37,7 +51,7 @@ export const jobsApi = {
       headers: getAuthHeaders(),
       body: JSON.stringify({ keywords, location })
     });
-    return response.json();
+    return handleResponse(response);
   }
 };
 
@@ -48,20 +62,20 @@ export const referralsApi = {
       headers: getAuthHeaders(),
       body: JSON.stringify(data)
     });
-    return response.json();
+    return handleResponse(response);
   },
   getBySeeker: async () => {
     const response = await fetch(`${API_URL}/referrals/seeker`, {
       headers: getAuthHeaders()
     });
-    return response.json();
+    return handleResponse(response);
   },
   getByReferrer: async (status?: string) => {
     const params = status ? `?status=${status}` : '';
     const response = await fetch(`${API_URL}/referrals/referrer${params}`, {
       headers: getAuthHeaders()
     });
-    return response.json();
+    return handleResponse(response);
   },
   updateStatus: async (id: string, status: string) => {
     const response = await fetch(`${API_URL}/referrals/${id}/status`, {
@@ -69,7 +83,7 @@ export const referralsApi = {
       headers: getAuthHeaders(),
       body: JSON.stringify({ status })
     });
-    return response.json();
+    return handleResponse(response);
   }
 };
 
@@ -80,7 +94,7 @@ export const aiJobsApi = {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ query })
     });
-    return response.json();
+    return handleResponse(response);
   },
   getRecommendations: async (profile: any) => {
     const response = await fetch(`${API_URL}/ai-jobs/recommendations`, {
@@ -88,7 +102,7 @@ export const aiJobsApi = {
       headers: getAuthHeaders(),
       body: JSON.stringify(profile)
     });
-    return response.json();
+    return handleResponse(response);
   }
 };
 
@@ -97,13 +111,13 @@ export const dashboardApi = {
     const response = await fetch(`${API_URL}/dashboard/seeker`, {
       headers: getAuthHeaders()
     });
-    return response.json();
+    return handleResponse(response);
   },
   getReferrer: async () => {
     const response = await fetch(`${API_URL}/dashboard/referrer`, {
       headers: getAuthHeaders()
     });
-    return response.json();
+    return handleResponse(response);
   }
 };
 
@@ -114,12 +128,12 @@ export const applicationsApi = {
       headers: getAuthHeaders(),
       body: JSON.stringify(data)
     });
-    return response.json();
+    return handleResponse(response);
   },
   getBySeeker: async () => {
     const response = await fetch(`${API_URL}/applications/seeker`, {
       headers: getAuthHeaders()
     });
-    return response.json();
+    return handleResponse(response);
   }
 };

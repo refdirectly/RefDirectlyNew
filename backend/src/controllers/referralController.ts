@@ -190,6 +190,7 @@ export const updateReferralStatus = async (req: AuthRequest, res: Response) => {
     // ESCROW LOCK: Only when referrer accepts
     if (status === 'accepted') {
       updateData.referrerId = req.user?.userId;
+      updateData.acceptedAt = new Date();
       
       // Lock funds from seeker's wallet to escrow
       try {
@@ -205,6 +206,29 @@ export const updateReferralStatus = async (req: AuthRequest, res: Response) => {
           message: `Cannot accept: ${error.message}` 
         });
       }
+
+      // AUTO-ASSIGN COMPANY HR
+      try {
+        const companyHR = await User.findOne({
+          role: 'company_hr',
+          $or: [
+            { company: referral.company },
+            { currentCompany: referral.company }
+          ],
+          isActive: true
+        }).sort({ lastSeenAt: -1 }); // Get most recently active HR
+
+        if (companyHR) {
+          updateData.companyHRId = companyHR._id;
+          updateData.hrChatEnabled = true;
+          console.log(`✅ Auto-assigned HR ${companyHR.name} to referral ${referralId}`);
+        } else {
+          console.log(`⚠️ No active HR found for company: ${referral.company}`);
+        }
+      } catch (hrError) {
+        console.error('HR assignment error:', hrError);
+        // Don't fail the acceptance if HR assignment fails
+      }
     }
     
     // Update referral
@@ -212,7 +236,7 @@ export const updateReferralStatus = async (req: AuthRequest, res: Response) => {
       referralId,
       updateData,
       { new: true }
-    ).populate('seekerId referrerId');
+    ).populate('seekerId referrerId companyHRId');
     
     // Send notifications
     if (status === 'accepted' && updatedReferral!.seekerId) {
@@ -221,7 +245,7 @@ export const updateReferralStatus = async (req: AuthRequest, res: Response) => {
         recipientUserId: (updatedReferral!.seekerId as any)._id.toString(),
         recipientRole: 'seeker',
         title: '🎉 Referral Accepted! Payment Secured',
-        message: `${referrer?.name || 'A referrer'} accepted your request. ₹${updatedReferral!.reward} locked in escrow.`,
+        message: `${referrer?.name || 'A referrer'} accepted your request. ₹${updatedReferral!.reward} locked in escrow.${updatedReferral!.hrChatEnabled ? ' You can now chat with company HR!' : ''}`,
         type: 'status_update',
         entityId: updatedReferral!._id.toString()
       });

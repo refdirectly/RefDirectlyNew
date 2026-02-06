@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Link, useNavigate } from 'react-router-dom';
-import { AlertCircle, Loader2, CheckCircle, User, Building2, Eye, EyeOff } from 'lucide-react';
+import { AlertCircle, Loader2, CheckCircle, User, Building2, Eye, EyeOff, Briefcase } from 'lucide-react';
 import { validateEmail, validatePassword, validatePasswordMatch } from '../utils/validation';
 
 const SignUp: React.FC = () => {
@@ -262,35 +262,45 @@ const SignUp: React.FC = () => {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.4 }}
-              onClick={() => navigate('/admin/login')}
-              className="bg-gradient-to-br from-gray-900 to-purple-900 rounded-2xl p-8 shadow-xl border-2 border-gray-700 hover:border-purple-500 cursor-pointer transition-all duration-300 hover:scale-105 hover:shadow-2xl"
+              onClick={() => navigate('/hr/signup')}
+              className="bg-white rounded-2xl p-8 shadow-xl border-2 border-gray-200 hover:border-orange-500 cursor-pointer transition-all duration-300 hover:scale-105 hover:shadow-2xl"
             >
-              <div className="h-16 w-16 rounded-2xl bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center mb-6 mx-auto">
-                <svg className="h-8 w-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-                </svg>
+              <div className="h-16 w-16 rounded-2xl bg-gradient-to-br from-orange-500 to-pink-500 flex items-center justify-center mb-6 mx-auto">
+                <Briefcase className="h-8 w-8 text-white" />
               </div>
-              <h3 className="font-display text-2xl font-bold text-white mb-3 text-center">Admin</h3>
-              <p className="text-gray-300 text-center mb-6">
-                Manage platform operations and users
+              <h3 className="font-display text-2xl font-bold text-gray-900 mb-3 text-center">HR Expert</h3>
+              <p className="text-gray-600 text-center mb-6">
+                Help job seekers and earn money
               </p>
               <ul className="space-y-3 mb-6">
                 <li className="flex items-start gap-2">
-                  <CheckCircle className="h-5 w-5 text-green-400 flex-shrink-0 mt-0.5" />
-                  <span className="text-sm text-gray-300">Full platform control</span>
+                  <CheckCircle className="h-5 w-5 text-green-600 flex-shrink-0 mt-0.5" />
+                  <span className="text-sm text-gray-700">Earn ₹199 per 30-min session</span>
                 </li>
                 <li className="flex items-start gap-2">
-                  <CheckCircle className="h-5 w-5 text-green-400 flex-shrink-0 mt-0.5" />
-                  <span className="text-sm text-gray-300">Analytics & insights</span>
+                  <CheckCircle className="h-5 w-5 text-green-600 flex-shrink-0 mt-0.5" />
+                  <span className="text-sm text-gray-700">Flexible schedule</span>
                 </li>
                 <li className="flex items-start gap-2">
-                  <CheckCircle className="h-5 w-5 text-green-400 flex-shrink-0 mt-0.5" />
-                  <span className="text-sm text-gray-300">User management</span>
+                  <CheckCircle className="h-5 w-5 text-green-600 flex-shrink-0 mt-0.5" />
+                  <span className="text-sm text-gray-700">Build your brand</span>
                 </li>
               </ul>
-              <button className="w-full bg-gradient-to-r from-purple-500 to-pink-500 text-white py-3 rounded-lg font-semibold hover:shadow-lg transition-all duration-200">
-                Admin Portal
+              <button className="w-full bg-gradient-to-r from-orange-500 to-pink-500 text-white py-3 rounded-lg font-semibold hover:shadow-lg transition-all duration-200">
+                Sign Up as HR Expert
               </button>
+            </motion.div>
+          </div>
+
+          <div className="mt-8 text-center">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.5 }}
+              onClick={() => navigate('/admin/login')}
+              className="inline-block bg-gradient-to-br from-gray-900 to-purple-900 rounded-xl px-6 py-3 shadow-lg border-2 border-gray-700 hover:border-purple-500 cursor-pointer transition-all duration-300 hover:scale-105"
+            >
+              <span className="text-white font-semibold">Admin Portal →</span>
             </motion.div>
           </div>
 

@@ -43,7 +43,12 @@ export const setupSocket = (httpServer: HttpServer) => {
 
     // Send current unread count
     notificationService.getUnreadCount(userId, role).then(count => {
-      socket.emit('unread_count', count);
+      socket.emit('notification:count', count);
+    });
+
+    // Handle notification read events
+    socket.on('notification:read', async (notificationId: string) => {
+      await notificationService.markAsRead(notificationId, userId);
     });
 
     socket.on('disconnect', () => {

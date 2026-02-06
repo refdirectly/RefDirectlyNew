@@ -260,6 +260,7 @@ const AdminDashboard: React.FC = () => {
             { id: 'subscriptions', label: 'Subscriptions', icon: TrendingUp },
             { id: 'sales', label: 'Sales', icon: TrendingUp },
             { id: 'verification', label: 'Verification', icon: Shield },
+            { id: 'hr-verification', label: 'HR Verification', icon: UserCheck },
             { id: 'ai-calling', label: 'AI Calling', icon: Phone },
             { id: 'analytics', label: 'Analytics', icon: PieChart },
             { id: 'settings', label: 'Settings', icon: Settings }
@@ -976,7 +977,7 @@ const AdminDashboard: React.FC = () => {
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-xl font-bold text-gray-900">Referral Verification</h2>
               <button 
-                onClick={() => navigate('/seeker/verification')}
+                onClick={() => navigate('/admin/verification')}
                 className="px-4 py-2 bg-gradient-primary text-white rounded-lg hover:shadow-lg transition-all"
               >
                 Open Verification Dashboard
@@ -999,6 +1000,35 @@ const AdminDashboard: React.FC = () => {
               <div className="p-4 bg-purple-50 rounded-lg border border-purple-200">
                 <p className="text-sm text-purple-600 font-semibold">Paid Out</p>
                 <p className="text-2xl font-bold text-purple-700 mt-2">₹0</p>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {activeTab === 'hr-verification' && (
+          <div className="bg-white rounded-xl shadow-lg p-6">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-xl font-bold text-gray-900">HR Expert Verification</h2>
+              <button 
+                onClick={() => navigate('/admin/hr-verification')}
+                className="px-4 py-2 bg-gradient-primary text-white rounded-lg hover:shadow-lg transition-all"
+              >
+                Open HR Verification Page
+              </button>
+            </div>
+            <p className="text-gray-600 mb-4">Review and approve HR expert applications to make them visible on the career experts page</p>
+            <div className="grid md:grid-cols-3 gap-4">
+              <div className="p-4 bg-orange-50 rounded-lg border border-orange-200">
+                <p className="text-sm text-orange-600 font-semibold">Pending Review</p>
+                <p className="text-2xl font-bold text-orange-700 mt-2">{users.filter(u => u.role === 'company_hr' && !u.verified).length}</p>
+              </div>
+              <div className="p-4 bg-green-50 rounded-lg border border-green-200">
+                <p className="text-sm text-green-600 font-semibold">Verified HRs</p>
+                <p className="text-2xl font-bold text-green-700 mt-2">{users.filter(u => u.role === 'company_hr' && u.verified).length}</p>
+              </div>
+              <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
+                <p className="text-sm text-blue-600 font-semibold">Total Applications</p>
+                <p className="text-2xl font-bold text-blue-700 mt-2">{users.filter(u => u.role === 'company_hr').length}</p>
               </div>
             </div>
           </div>

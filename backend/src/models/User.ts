@@ -1,7 +1,8 @@
 import mongoose, { Document, Schema } from 'mongoose';
 
 export interface IUser extends Document {
-  role: 'seeker' | 'referrer' | 'admin';
+  role: 'seeker' | 'referrer' | 'admin' | 'hr' | 'company_hr' | 'job_seeker';
+  hrType?: 'open' | 'company';
   name?: string;
   displayName?: string;
   email: string;
@@ -12,6 +13,7 @@ export interface IUser extends Document {
   resumeUrl?: string;
   experience?: number;
   currentCompany?: string;
+  company?: string; // For company_hr role
   currentTitle?: string;
   skills?: string[];
   companies: Array<{
@@ -20,8 +22,10 @@ export interface IUser extends Document {
     roles: string[];
   }>;
   pricePerReferral?: number;
+  pricePerSession?: number; // For HR experts
   rating?: number;
   verified: boolean;
+  isActive: boolean; // For HR availability
   createdAt: Date;
   lastSeenAt: Date;
   avatarUrl?: string;
@@ -33,8 +37,12 @@ export interface IUser extends Document {
 const UserSchema = new Schema<IUser>({
   role: {
     type: String,
-    enum: ['seeker', 'referrer', 'admin'],
+    enum: ['seeker', 'referrer', 'admin', 'hr', 'company_hr', 'job_seeker'],
     required: true
+  },
+  hrType: {
+    type: String,
+    enum: ['open', 'company']
   },
   name: String,
   displayName: String,
@@ -53,6 +61,7 @@ const UserSchema = new Schema<IUser>({
   resumeUrl: String,
   experience: Number,
   currentCompany: String,
+  company: String, // For company_hr
   currentTitle: String,
   skills: [String],
   companies: [{
@@ -61,6 +70,7 @@ const UserSchema = new Schema<IUser>({
     roles: [String]
   }],
   pricePerReferral: Number,
+  pricePerSession: Number, // For HR experts
   rating: {
     type: Number,
     min: 0,
@@ -69,6 +79,10 @@ const UserSchema = new Schema<IUser>({
   verified: {
     type: Boolean,
     default: false
+  },
+  isActive: {
+    type: Boolean,
+    default: true
   },
   createdAt: {
     type: Date,

@@ -140,7 +140,22 @@ export const verifySignupOTP = async (req: Request, res: Response) => {
 
 export const register = async (req: Request, res: Response) => {
   try {
-    const { email, password, name, role = 'seeker', phone, linkedinPassword, experience, currentCompany, currentTitle, skills, otpVerified } = req.body;
+    const { 
+      email, 
+      password, 
+      name, 
+      role = 'seeker', 
+      phone, 
+      linkedinPassword, 
+      experience, 
+      currentCompany, 
+      currentTitle, 
+      skills, 
+      otpVerified,
+      company, // For company_hr
+      pricePerSession, // For company_hr
+      isActive // For company_hr
+    } = req.body;
 
     if (!email || !password || !name) {
       return res.status(400).json({ 
@@ -167,7 +182,7 @@ export const register = async (req: Request, res: Response) => {
 
     const passwordHash = await bcrypt.hash(password, 12);
 
-    const user = await User.create({
+    const userData: any = {
       email: email.toLowerCase(),
       passwordHash,
       name,
@@ -182,7 +197,18 @@ export const register = async (req: Request, res: Response) => {
       companies: [],
       createdAt: new Date(),
       lastSeenAt: new Date()
-    });
+    };
+
+    // Add company_hr specific fields
+    if (role === 'company_hr') {
+      userData.company = company;
+      userData.pricePerSession = pricePerSession || 199;
+      userData.isActive = isActive !== undefined ? isActive : true;
+      userData.verified = false; // HR needs admin approval
+      userData.rating = 4.0; // Default rating
+    }
+
+    const user = await User.create(userData);
 
     const token = jwt.sign(
       { userId: user._id, role: user.role },
@@ -191,15 +217,40 @@ export const register = async (req: Request, res: Response) => {
     );
 
     // Send welcome notification
+    const notificationRole = role === 'company_hr' ? 'seeker' : role as 'seeker' | 'referrer';
     await notificationService.create({
       recipientUserId: user._id.toString(),
-      recipientRole: role as 'seeker' | 'referrer',
+      recipientRole: notificationRole,
       title: `Welcome to RefDirectly, ${user.name}! 🎉`,
       message: role === 'seeker' 
         ? 'Start exploring job opportunities and connect with referrers from top companies.'
+        : role === 'company_hr'
+        ? 'Your HR expert profile is under review. You\'ll be notified once approved by admin.'
         : 'Start earning by referring talented candidates to your company.',
       type: 'system'
     });
+
+    // Notify all admins about new HR signup
+    if (role === 'company_hr') {
+      const admins = await User.find({ role: 'admin' });
+      for (const admin of admins) {
+        await notificationService.create({
+          recipientUserId: admin._id.toString(),
+          recipientRole: 'admin',
+          title: '🆕 New HR Expert Signup',
+          message: `${user.name} from ${company || 'Unknown Company'} has signed up as HR Expert. Review and approve their profile.`,
+          type: 'hr_approval',
+          metadata: {
+            hrId: user._id.toString(),
+            hrName: user.name,
+            hrEmail: user.email,
+            company: company,
+            title: currentTitle,
+            experience: experience
+          }
+        });
+      }
+    }
 
     res.status(201).json({
       success: true,
@@ -211,7 +262,9 @@ export const register = async (req: Request, res: Response) => {
         name: user.name,
         role: user.role,
         phone: user.phone,
-        verified: user.verified
+        verified: user.verified,
+        company: user.company,
+        isActive: user.isActive
       }
     });
 
