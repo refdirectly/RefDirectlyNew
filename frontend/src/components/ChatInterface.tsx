@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Paperclip, Smile, Send, Check, CheckCheck, Image, File, X, MoreVertical, Phone, Video, Search } from 'lucide-react';
+import VideoCall from './VideoCall';
+import IncomingCallModal from './IncomingCallModal';
 
 interface Message {
   _id?: string;
@@ -27,6 +29,13 @@ export default function ChatInterface({ roomId, userRole, socket, onClose }: Cha
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
+  const [showCall, setShowCall] = useState(false);
+  const [isVideoCall, setIsVideoCall] = useState(false);
+  const [showIncomingCall, setShowIncomingCall] = useState(false);
+  const [incomingCallType, setIncomingCallType] = useState(false);
+  const [callState, setCallState] = useState<'idle' | 'requesting' | 'ringing' | 'connecting' | 'connected' | 'failed' | 'unavailable'>('idle');
+  const [otherUserOnline, setOtherUserOnline] = useState(false);
+  const [isCallInitiator, setIsCallInitiator] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const typingTimeoutRef = useRef<ReturnType<typeof setTimeout>>();
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -36,15 +45,20 @@ export default function ChatInterface({ roomId, userRole, socket, onClose }: Cha
   useEffect(() => {
     if (!socket) return;
 
+    console.log('🔌 Joining chat room:', roomId);
     socket.emit('join_chat_room', roomId);
     setIsConnected(true);
     
     socket.on('connect', () => {
+      console.log('🔌 Socket reconnected, rejoining room:', roomId);
       socket.emit('join_chat_room', roomId);
       setIsConnected(true);
     });
     
-    socket.on('disconnect', () => setIsConnected(false));
+    socket.on('disconnect', () => {
+      console.log('❌ Socket disconnected');
+      setIsConnected(false);
+    });
 
     const token = localStorage.getItem('token');
     const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
@@ -183,8 +197,175 @@ export default function ChatInterface({ roomId, userRole, socket, onClose }: Cha
     setShowEmojiPicker(false);
   };
 
+  const startCall = (video: boolean) => {
+    console.log('📞 Starting call, video:', video);
+    console.log('📍 Room ID:', roomId);
+    console.log('🔌 Socket connected:', socket?.connected);
+    console.log('🎯 Call state:', callState);
+    
+    setIsCallInitiator(true);
+    setCallState('ringing');
+    setIsVideoCall(video);
+    setShowCall(true);
+    
+    console.log('📤 Emitting call-request to room:', roomId);
+    socket.emit('call-request', { roomId, isVideo: video });
+    
+    const timeoutId = setTimeout(() => {
+      console.log('⏰ Checking call state after 30s:', callState);
+      if (callState === 'ringing') {
+        console.log('⏰ Call timeout');
+        setCallState('failed');
+        setShowCall(false);
+        alert('Call not answered. The referrer may be busy.');
+        setCallState('idle');
+        setIsCallInitiator(false);
+      }
+    }, 30000);
+    
+    (window as any).callTimeoutId = timeoutId;
+  };
+
+  useEffect(() => {
+    if (!socket) return;
+    
+    console.log('📡 Setting up call event listeners');
+    
+    socket.on('incoming-call', ({ isVideo }: { isVideo: boolean }) => {
+      console.log('📞 INCOMING CALL RECEIVED! Video:', isVideo);
+      setIncomingCallType(isVideo);
+      setShowIncomingCall(true);
+      setCallState('ringing');
+    });
+    
+    socket.on('call-rejected', () => {
+      console.log('❌ Call rejected by other user');
+      setShowCall(false);
+      setCallState('idle');
+      alert('Call was rejected by the other user.');
+    });
+    
+    socket.on('call-accepted', () => {
+      console.log('✅ Call accepted');
+      setCallState('connecting');
+      // Clear timeout
+      if ((window as any).callTimeoutId) {
+        clearTimeout((window as any).callTimeoutId);
+      }
+    });
+    
+    socket.on('call-failed', ({ reason }: { reason: string }) => {
+      console.log('❌ Call failed:', reason);
+      setShowCall(false);
+      setCallState('idle');
+      alert(`Call failed: ${reason}`);
+    });
+    
+    return () => {
+      console.log('🧹 Cleaning up call event listeners');
+      socket.off('incoming-call');
+      socket.off('call-rejected');
+      socket.off('call-accepted');
+      socket.off('call-failed');
+    };
+  }, [socket]);
+
+  if (showCall) {
+    return (
+      <VideoCall 
+        roomId={roomId} 
+        socket={socket} 
+        onClose={() => {
+          setShowCall(false);
+          setCallState('idle');
+          setIsCallInitiator(false);
+        }} 
+        isVideoCall={isVideoCall} 
+        isInitiator={isCallInitiator} 
+        otherUserName={userRole === 'seeker' ? 'Referrer' : 'Job Seeker'}
+        onCallConnected={() => setCallState('connected')}
+        onCallFailed={() => {
+          setCallState('failed');
+          setShowCall(false);
+          setIsCallInitiator(false);
+          setTimeout(() => setCallState('idle'), 2000);
+        }}
+      />
+    );
+  }
+
+  const handleAcceptCall = () => {
+    setIsCallInitiator(false);
+    setIsVideoCall(incomingCallType);
+    setShowIncomingCall(false);
+    setShowCall(true);
+    setCallState('connecting');
+    socket.emit('call-accepted', { roomId });
+  };
+
+  const handleRejectCall = () => {
+    setShowIncomingCall(false);
+    setCallState('idle');
+    socket.emit('call-rejected', { roomId });
+  };
+
   return (
+    <>
+      {showIncomingCall && (
+        <IncomingCallModal
+          callerName={userRole === 'seeker' ? 'Referrer' : 'Job Seeker'}
+          isVideo={incomingCallType}
+          onAccept={handleAcceptCall}
+          onReject={handleRejectCall}
+        />
+      )}
     <div className="flex flex-col h-full bg-white overflow-hidden">
+      <div className="bg-white border-b border-gray-200 px-4 py-3 flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-white font-bold">
+            {roomId.charAt(0).toUpperCase()}
+          </div>
+          <div>
+            <h3 className="font-semibold text-gray-900">Chat</h3>
+            <div className="flex items-center gap-2">
+              <p className="text-xs text-gray-500">{isConnected ? 'Online' : 'Offline'}</p>
+              {callState === 'ringing' && (
+                <span className="text-xs text-yellow-600 font-medium animate-pulse">Ringing...</span>
+              )}
+              {callState === 'connecting' && (
+                <span className="text-xs text-blue-600 font-medium">Connecting...</span>
+              )}
+              {callState === 'connected' && (
+                <span className="text-xs text-green-600 font-medium">In Call</span>
+              )}
+            </div>
+          </div>
+        </div>
+        <div className="flex gap-2">
+          <button 
+            onClick={() => {
+              console.log('Voice call button clicked');
+              startCall(false);
+            }} 
+            className="p-2 hover:bg-gray-100 rounded-full transition-colors disabled:opacity-50 disabled:cursor-not-allowed" 
+            title="Voice call"
+            disabled={callState !== 'idle' || !isConnected}
+          >
+            <Phone className="h-5 w-5 text-gray-600" />
+          </button>
+          <button 
+            onClick={() => {
+              console.log('Video call button clicked');
+              startCall(true);
+            }} 
+            className="p-2 hover:bg-gray-100 rounded-full transition-colors disabled:opacity-50 disabled:cursor-not-allowed" 
+            title="Video call"
+            disabled={callState !== 'idle' || !isConnected}
+          >
+            <Video className="h-5 w-5 text-gray-600" />
+          </button>
+        </div>
+      </div>
       {/* Modern Messages Area */}
       <div 
         className="flex-1 overflow-y-auto p-4 space-y-1 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent bg-white"
@@ -388,5 +569,6 @@ export default function ChatInterface({ roomId, userRole, socket, onClose }: Cha
         </div>
       </div>
     </div>
+    </>
   );
 }

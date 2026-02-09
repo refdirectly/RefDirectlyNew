@@ -2,9 +2,8 @@ import { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import ChatInterface from '../components/ChatInterface';
 import { io, Socket } from 'socket.io-client';
-import Header from '../components/Header';
 import ChatList from '../components/chat/ChatList';
-import ChatHeader from '../components/chat/ChatHeader';
+import Header from '../components/Header';
 
 export default function SeekerChatPage() {
   const [socket, setSocket] = useState<Socket | null>(null);
@@ -151,47 +150,32 @@ export default function SeekerChatPage() {
 
   return (
     <div className="flex flex-col h-screen bg-gray-50">
-      <div style={{ height: '120px' }}></div>
       <Header />
-      
-      <div className="flex flex-1 overflow-hidden">
-        {/* Chat List Sidebar */}
-        <ChatList
-          chats={filteredChats}
-          selectedChatId={roomId || undefined}
-          onSelectChat={(chatId) => navigate(`/chat?room=${chatId}`)}
-          searchQuery={searchQuery}
-          onSearchChange={setSearchQuery}
-        />
+      <div className="flex flex-1 overflow-hidden pt-28">
+      <ChatList
+        chats={filteredChats}
+        selectedChatId={roomId || undefined}
+        onSelectChat={(chatId) => navigate(`/chat?room=${chatId}`)}
+        searchQuery={searchQuery}
+        onSearchChange={setSearchQuery}
+      />
 
-        {/* Chat Window */}
-        <div className="flex-1 flex flex-col bg-white">
-          {roomId && socket ? (
-            <>
-              <ChatHeader
-                participant={{
-                  name: chatInfo?.company || 'Chat',
-                  avatarUrl: undefined,
-                  isOnline: true
-                }}
-              />
-              <div className="flex-1 overflow-hidden">
-                <ChatInterface roomId={roomId} userRole="seeker" socket={socket} />
+      <div className="flex-1 flex flex-col bg-white">
+        {roomId && socket ? (
+          <ChatInterface roomId={roomId} userRole="seeker" socket={socket} />
+        ) : (
+          <div className="flex items-center justify-center h-full">
+            <div className="text-center">
+              <div className="bg-gray-100 rounded-full p-8 mb-4 inline-block">
+                <svg className="h-16 w-16 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                </svg>
               </div>
-            </>
-          ) : (
-            <div className="flex items-center justify-center h-full">
-              <div className="text-center">
-                <div className="bg-gray-100 rounded-full p-8 mb-4 inline-block">
-                  <svg className="h-16 w-16 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-                  </svg>
-                </div>
-                <p className="text-gray-500 text-lg font-medium">Select a chat to start messaging</p>
-              </div>
+              <p className="text-gray-500 text-lg font-medium">Select a chat to start messaging</p>
             </div>
-          )}
-        </div>
+          </div>
+        )}
+      </div>
       </div>
     </div>
   );

@@ -4,7 +4,6 @@ import ChatInterface from '../components/ChatInterface';
 import { io, Socket } from 'socket.io-client';
 import Header from '../components/Header';
 import ChatList from '../components/chat/ChatList';
-import ChatHeader from '../components/chat/ChatHeader';
 
 export default function ReferrerChatPage() {
   const [socket, setSocket] = useState<Socket | null>(null);
@@ -151,10 +150,8 @@ export default function ReferrerChatPage() {
 
   return (
     <div className="flex flex-col h-screen bg-gray-50">
-      <div style={{ height: '120px' }}></div>
       <Header />
-      
-      <div className="flex flex-1 overflow-hidden">
+      <div className="flex flex-1 overflow-hidden pt-28">
         {/* Chat List Sidebar */}
         <ChatList
           chats={filteredChats}
@@ -167,18 +164,7 @@ export default function ReferrerChatPage() {
         {/* Chat Window */}
         <div className="flex-1 flex flex-col bg-white">
           {roomId && socket ? (
-            <>
-              <ChatHeader
-                participant={{
-                  name: chatInfo?.company || 'Chat',
-                  avatarUrl: undefined,
-                  isOnline: true
-                }}
-              />
-              <div className="flex-1 overflow-hidden">
-                <ChatInterface roomId={roomId} userRole="referrer" socket={socket} />
-              </div>
-            </>
+            <ChatInterface roomId={roomId} userRole="referrer" socket={socket} />
           ) : (
             <div className="flex items-center justify-center h-full">
               <div className="text-center">

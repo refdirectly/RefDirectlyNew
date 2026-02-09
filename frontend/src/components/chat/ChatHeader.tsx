@@ -8,9 +8,11 @@ interface ChatHeaderProps {
     isOnline?: boolean;
   };
   onBack?: () => void;
+  onVoiceCall?: () => void;
+  onVideoCall?: () => void;
 }
 
-const ChatHeader: React.FC<ChatHeaderProps> = ({ participant, onBack }) => {
+const ChatHeader: React.FC<ChatHeaderProps> = ({ participant, onBack, onVoiceCall, onVideoCall }) => {
   return (
     <div className="bg-white border-b border-gray-200 px-6 py-4 sticky top-0 z-10">
       <div className="flex items-center justify-between">
@@ -39,10 +41,10 @@ const ChatHeader: React.FC<ChatHeaderProps> = ({ participant, onBack }) => {
         </div>
 
         <div className="flex items-center gap-2">
-          <button className="p-2 hover:bg-gray-100 rounded-full transition-colors" title="Voice call">
+          <button onClick={onVoiceCall} className="p-2 hover:bg-gray-100 rounded-full transition-colors" title="Voice call">
             <Phone className="h-5 w-5 text-gray-600" />
           </button>
-          <button className="p-2 hover:bg-gray-100 rounded-full transition-colors" title="Video call">
+          <button onClick={onVideoCall} className="p-2 hover:bg-gray-100 rounded-full transition-colors" title="Video call">
             <Video className="h-5 w-5 text-gray-600" />
           </button>
           <button className="p-2 hover:bg-gray-100 rounded-full transition-colors" title="Info">

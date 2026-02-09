@@ -2,11 +2,14 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Phone, Video, PhoneOff, VideoOff, Mic, MicOff } from 'lucide-react';
+import { io, Socket } from 'socket.io-client';
 import Header from '../components/Header';
 import ChatList from '../components/chat/ChatList';
 import ChatHeader from '../components/chat/ChatHeader';
 import MessageBubble from '../components/chat/MessageBubble';
 import MessageInput from '../components/chat/MessageInput';
+import VideoCall from '../components/VideoCall';
+import IncomingCallModal from '../components/IncomingCallModal';
 
 const HRSessionRoomPage: React.FC = () => {
   const { sessionId } = useParams();
@@ -17,12 +20,16 @@ const HRSessionRoomPage: React.FC = () => {
   const [isVideoOff, setIsVideoOff] = useState(false);
   const [allSessions, setAllSessions] = useState<any[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
+  const [socket, setSocket] = useState<Socket | null>(null);
+  const [showCall, setShowCall] = useState(false);
+  const [isVideoCall, setIsVideoCall] = useState(false);
+  const [showIncomingCall, setShowIncomingCall] = useState(false);
+  const [incomingCallType, setIncomingCallType] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const localVideoRef = useRef<HTMLVideoElement>(null);
   const remoteVideoRef = useRef<HTMLVideoElement>(null);
 
   useEffect(() => {
-    // Load messages from localStorage
     const savedMessages = localStorage.getItem(`hr-session-${sessionId}`);
     if (savedMessages) {
       setMessages(JSON.parse(savedMessages));
@@ -30,10 +37,20 @@ const HRSessionRoomPage: React.FC = () => {
     
     fetchSession();
     fetchAllSessions();
-    if (session?.sessionType !== 'chat') {
-      initializeMedia();
-    }
-  }, [sessionId, messages]);
+
+    const token = localStorage.getItem('token');
+    const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+    const newSocket = io(API_URL, {
+      withCredentials: true,
+      auth: { token }
+    });
+    setSocket(newSocket);
+    newSocket.emit('join_chat_room', sessionId);
+
+    return () => {
+      newSocket.close();
+    };
+  }, [sessionId]);
 
   const fetchAllSessions = async () => {
     try {
@@ -60,7 +77,6 @@ const HRSessionRoomPage: React.FC = () => {
 
   const fetchSession = async () => {
     try {
-      // Mock session data - replace with actual API call
       const mockSession = {
         _id: sessionId,
         sessionType: 'chat',
@@ -76,17 +92,36 @@ const HRSessionRoomPage: React.FC = () => {
     }
   };
 
-  const initializeMedia = async () => {
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({ 
-        video: session?.sessionType === 'video', 
-        audio: true 
-      });
-      if (localVideoRef.current) {
-        localVideoRef.current.srcObject = stream;
-      }
-    } catch (error) {
-      console.error('Media access error:', error);
+  const startCall = (video: boolean) => {
+    setIsVideoCall(video);
+    setShowCall(true);
+    if (socket) {
+      socket.emit('call-request', { roomId: sessionId, isVideo: video });
+    }
+  };
+
+  useEffect(() => {
+    if (!socket) return;
+    socket.on('incoming-call', ({ isVideo }: { isVideo: boolean }) => {
+      setIncomingCallType(isVideo);
+      setShowIncomingCall(true);
+    });
+    return () => socket.off('incoming-call');
+  }, [socket]);
+
+  const handleAcceptCall = () => {
+    setIsVideoCall(incomingCallType);
+    setShowIncomingCall(false);
+    setShowCall(true);
+    if (socket) {
+      socket.emit('call-accepted', { roomId: sessionId });
+    }
+  };
+
+  const handleRejectCall = () => {
+    setShowIncomingCall(false);
+    if (socket) {
+      socket.emit('call-rejected', { roomId: sessionId });
     }
   };
 
@@ -118,7 +153,20 @@ const HRSessionRoomPage: React.FC = () => {
     s.participant.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
+  if (showCall && socket) {
+    return <VideoCall roomId={sessionId!} socket={socket} onClose={() => setShowCall(false)} isVideoCall={isVideoCall} isInitiator={true} otherUserName={session?.hrId?.name || 'HR Expert'} />;
+  }
+
   return (
+    <>
+      {showIncomingCall && (
+        <IncomingCallModal
+          callerName={session?.hrId?.name || 'HR Expert'}
+          isVideo={incomingCallType}
+          onAccept={handleAcceptCall}
+          onReject={handleRejectCall}
+        />
+      )}
     <div className="flex flex-col h-screen bg-gray-50">
       <div style={{ height: '120px' }}></div>
       <Header />
@@ -143,6 +191,8 @@ const HRSessionRoomPage: React.FC = () => {
                   avatarUrl: session?.hrId?.avatarUrl,
                   isOnline: true
                 }}
+                onVoiceCall={() => startCall(false)}
+                onVideoCall={() => startCall(true)}
               />
 
               {/* Main Content */}
@@ -215,6 +265,7 @@ const HRSessionRoomPage: React.FC = () => {
         </div>
       </div>
     </div>
+    </>
   );
 };
 

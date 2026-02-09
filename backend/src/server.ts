@@ -163,6 +163,51 @@ io.on('connection', (socket) => {
   createNotificationHandler(io, socket);
   createHRChatHandler(io, socket);
   
+  // WebRTC call signaling
+  socket.on('call-request', ({ roomId, isVideo }) => {
+    console.log(`📞 Call request in room ${roomId}, video: ${isVideo}, from socket: ${socket.id}`);
+    const room = io.sockets.adapter.rooms.get(roomId);
+    console.log(`📍 Room ${roomId} has ${room?.size || 0} participants`);
+    
+    if (!room || room.size < 2) {
+      console.log('❌ Room validation failed');
+      socket.emit('call-failed', { reason: 'User not in room' });
+      return;
+    }
+    
+    console.log('✅ Broadcasting incoming-call to room');
+    socket.to(roomId).emit('incoming-call', { isVideo });
+  });
+
+  socket.on('call-accepted', ({ roomId }) => {
+    console.log(`✅ Call accepted in room ${roomId}`);
+    socket.to(roomId).emit('call-accepted');
+  });
+
+  socket.on('call-rejected', ({ roomId }) => {
+    console.log(`❌ Call rejected in room ${roomId}`);
+    socket.to(roomId).emit('call-rejected');
+  });
+
+  socket.on('offer', ({ roomId, offer }) => {
+    console.log(`📤 Relaying offer to room ${roomId}`);
+    socket.to(roomId).emit('offer', { offer });
+  });
+
+  socket.on('answer', ({ roomId, answer }) => {
+    console.log(`📤 Relaying answer to room ${roomId}`);
+    socket.to(roomId).emit('answer', { answer });
+  });
+
+  socket.on('ice-candidate', ({ roomId, candidate }) => {
+    socket.to(roomId).emit('ice-candidate', { candidate });
+  });
+
+  socket.on('end-call', ({ roomId }) => {
+    console.log(`📴 Call ended in room ${roomId}`);
+    socket.to(roomId).emit('call-ended');
+  });
+  
   // Generic chat handlers for referral HR chat
   socket.on('join_chat', (chatId: string) => {
     socket.join(`chat:${chatId}`);
