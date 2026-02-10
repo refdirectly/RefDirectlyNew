@@ -80,7 +80,9 @@ const ReferralHRChatPage: React.FC = () => {
   useEffect(() => {
     if (!socket || !chat) return;
 
-    socket.emit('join_chat', chat._id);
+    // Join the chat room for real-time messaging and calls
+    socket.emit('join_chat_room', chat._id);
+    console.log('🔌 Joined chat room:', chat._id);
 
     socket.on('new_message', (message: Message) => {
       setMessages(prev => {
@@ -312,7 +314,7 @@ const ReferralHRChatPage: React.FC = () => {
                 participant={{
                   name: otherParticipant?.name || 'HR',
                   avatarUrl: otherParticipant?.avatarUrl,
-                  isOnline: true
+                  isOnline: socket?.connected || false
                 }}
                 onVoiceCall={() => startCall(false)}
                 onVideoCall={() => startCall(true)}

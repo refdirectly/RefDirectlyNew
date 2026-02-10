@@ -73,15 +73,20 @@ export const setupSocket = (httpServer: HttpServer) => {
     });
 
     // WebRTC signaling for video/voice calls
-    socket.on('call-request', ({ roomId, isVideo }) => {
+    socket.on('call-request', async ({ roomId, isVideo }) => {
       console.log(`📞 Call request in room ${roomId}, video: ${isVideo}`);
-      const room = io.sockets.adapter.rooms.get(roomId);
       
-      if (!room || room.size < 2) {
-        socket.emit('call-failed', { reason: 'User not in room' });
+      // Check if other user is online in the room
+      const socketsInRoom = await io.in(roomId).fetchSockets();
+      const otherUserSocket = socketsInRoom.find(s => s.id !== socket.id);
+      
+      if (!otherUserSocket) {
+        console.log('❌ Other user not online');
+        socket.emit('call-failed', { reason: 'User is offline' });
         return;
       }
       
+      console.log('✅ Other user is online, sending call...');
       socket.to(roomId).emit('incoming-call', { isVideo });
     });
 

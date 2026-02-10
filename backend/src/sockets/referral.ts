@@ -204,6 +204,15 @@ export function createReferralHandler(io: Server, socket: Socket) {
     console.log(`👥 Room ${roomId} now has ${room?.size || 0} participants`);
   });
 
+  // Also support join_chat for backward compatibility
+  socket.on('join_chat', (roomId: string) => {
+    socket.join(roomId);
+    console.log(`✅ Socket ${socket.id} joined chat ${roomId}`);
+    
+    const room = io.sockets.adapter.rooms.get(roomId);
+    console.log(`👥 Room ${roomId} now has ${room?.size || 0} participants`);
+  });
+
   // Typing indicator
   socket.on('typing', (data: { roomId: string; isTyping: boolean }) => {
     socket.to(data.roomId).emit('typing', data);
