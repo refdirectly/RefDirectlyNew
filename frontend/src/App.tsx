@@ -126,7 +126,7 @@ function App() {
         <Route path="/hr/login" element={<HRLoginPage />} />
         <Route path="/auth/callback" element={<AuthCallbackPage />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
-        <Route path="/reset-password/:token" element={<ResetPassword />} />
+        <Route path="/reset-password" element={<ResetPassword />} />
         
         {/* Job Seeker Routes */}
         <Route path="/jobs" element={<JobsPage />} />

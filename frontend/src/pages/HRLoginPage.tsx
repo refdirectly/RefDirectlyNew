@@ -164,6 +164,12 @@ const HRLoginPage: React.FC = () => {
                   </div>
                 </div>
 
+                <div className="flex items-center justify-end">
+                  <Link to="/forgot-password" className="text-sm font-semibold text-brand-purple hover:text-brand-magenta transition-colors">
+                    Forgot password?
+                  </Link>
+                </div>
+
                 <button
                   type="submit"
                   disabled={loading}
