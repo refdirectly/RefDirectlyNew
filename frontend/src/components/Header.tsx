@@ -201,6 +201,7 @@ const Header: React.FC = () => {
             ) : (
               <>
                 <Link to="/auth/login" className="text-gray-700 hover:text-brand-purple font-bold transition-all duration-300 hover:scale-110 px-5 py-2.5 rounded-full hover:bg-gradient-to-r hover:from-gray-50 hover:to-gray-100 border border-transparent hover:border-gray-200">Login</Link>
+                <Link to="/signup" className="text-gray-700 hover:text-brand-magenta font-bold transition-all duration-300 hover:scale-110 px-5 py-2.5 rounded-full hover:bg-gradient-to-r hover:from-gray-50 hover:to-gray-100 border border-transparent hover:border-gray-200">Sign Up</Link>
                 <Link to="/referrer/join" className="relative overflow-hidden bg-gradient-primary text-white px-7 py-3 rounded-full font-bold hover:shadow-2xl hover:scale-110 transition-all duration-300 border border-white/30 group">
                   <span className="relative z-10">Become a Referrer</span>
                   <div className="absolute inset-0 bg-gradient-to-r from-brand-magenta to-brand-teal opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
@@ -244,6 +245,7 @@ const Header: React.FC = () => {
             ) : (
               <>
                 <Link to="/auth/login" className="text-gray-700 hover:text-brand-purple font-medium transition-all duration-200">Login</Link>
+                <Link to="/signup" className="text-gray-700 hover:text-brand-magenta font-medium transition-all duration-200">Sign Up</Link>
                 <Link to="/referrer/join" className="bg-gradient-primary text-white px-8 py-3 rounded-full font-semibold hover:shadow-lg transition-all duration-200 w-full max-w-xs text-center">Become a Referrer</Link>
               </>
             )}
