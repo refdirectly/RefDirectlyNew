@@ -8,6 +8,8 @@ import ChatList from '../components/chat/ChatList';
 import ChatHeader from '../components/chat/ChatHeader';
 import MessageBubble from '../components/chat/MessageBubble';
 import MessageInput from '../components/chat/MessageInput';
+import VideoCall from '../components/VideoCall';
+import IncomingCallModal from '../components/IncomingCallModal';
 
 interface Message {
   _id: string;
@@ -32,6 +34,12 @@ const ReferralHRChatPage: React.FC = () => {
   const [sending, setSending] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [allChats, setAllChats] = useState<any[]>([]);
+  const [showCall, setShowCall] = useState(false);
+  const [isVideoCall, setIsVideoCall] = useState(false);
+  const [showIncomingCall, setShowIncomingCall] = useState(false);
+  const [incomingCallType, setIncomingCallType] = useState(false);
+  const [callState, setCallState] = useState<'idle' | 'requesting' | 'ringing' | 'connecting' | 'connected' | 'failed'>('idle');
+  const [isCallInitiator, setIsCallInitiator] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const currentUserId = JSON.parse(localStorage.getItem('user') || '{}')._id;
 
@@ -82,9 +90,39 @@ const ReferralHRChatPage: React.FC = () => {
       fetchAllChats();
     });
 
+    socket.on('incoming-call', ({ isVideo }: { isVideo: boolean }) => {
+      console.log('📞 Incoming call, video:', isVideo);
+      setIncomingCallType(isVideo);
+      setShowIncomingCall(true);
+      setCallState('ringing');
+    });
+
+    socket.on('call-rejected', () => {
+      console.log('❌ Call rejected');
+      setShowCall(false);
+      setCallState('idle');
+      alert('Call was rejected.');
+    });
+
+    socket.on('call-accepted', () => {
+      console.log('✅ Call accepted');
+      setCallState('connecting');
+    });
+
+    socket.on('call-failed', ({ reason }: { reason: string }) => {
+      console.log('❌ Call failed:', reason);
+      setShowCall(false);
+      setCallState('idle');
+      alert(`Call failed: ${reason}`);
+    });
+
     return () => {
       socket.emit('leave_chat', chat._id);
       socket.off('new_message');
+      socket.off('incoming-call');
+      socket.off('call-rejected');
+      socket.off('call-accepted');
+      socket.off('call-failed');
     };
   }, [socket, chat]);
 
@@ -168,6 +206,43 @@ const ReferralHRChatPage: React.FC = () => {
     }
   };
 
+  const startCall = (video: boolean) => {
+    if (!socket || !chat) return;
+    console.log('📞 Starting call, video:', video);
+    setIsCallInitiator(true);
+    setCallState('ringing');
+    setIsVideoCall(video);
+    setShowCall(true);
+    socket.emit('call-request', { roomId: chat._id, isVideo: video });
+
+    setTimeout(() => {
+      if (callState === 'ringing') {
+        setCallState('failed');
+        setShowCall(false);
+        alert('Call not answered.');
+        setCallState('idle');
+        setIsCallInitiator(false);
+      }
+    }, 30000);
+  };
+
+  const handleAcceptCall = () => {
+    if (!socket || !chat) return;
+    setIsCallInitiator(false);
+    setIsVideoCall(incomingCallType);
+    setShowIncomingCall(false);
+    setShowCall(true);
+    setCallState('connecting');
+    socket.emit('call-accepted', { roomId: chat._id });
+  };
+
+  const handleRejectCall = () => {
+    if (!socket || !chat) return;
+    setShowIncomingCall(false);
+    setCallState('idle');
+    socket.emit('call-rejected', { roomId: chat._id });
+  };
+
   if (loading) {
     return (
       <div className="flex flex-col min-h-screen">
@@ -181,7 +256,40 @@ const ReferralHRChatPage: React.FC = () => {
 
   const otherParticipant = chat?.participants.find(p => p._id !== currentUserId);
 
+  if (showCall && chat) {
+    return (
+      <VideoCall
+        roomId={chat._id}
+        socket={socket}
+        onClose={() => {
+          setShowCall(false);
+          setCallState('idle');
+          setIsCallInitiator(false);
+        }}
+        isVideoCall={isVideoCall}
+        isInitiator={isCallInitiator}
+        otherUserName={otherParticipant?.name || 'User'}
+        onCallConnected={() => setCallState('connected')}
+        onCallFailed={() => {
+          setCallState('failed');
+          setShowCall(false);
+          setIsCallInitiator(false);
+          setTimeout(() => setCallState('idle'), 2000);
+        }}
+      />
+    );
+  }
+
   return (
+    <>
+      {showIncomingCall && (
+        <IncomingCallModal
+          callerName={otherParticipant?.name || 'User'}
+          isVideo={incomingCallType}
+          onAccept={handleAcceptCall}
+          onReject={handleRejectCall}
+        />
+      )}
     <div className="flex flex-col h-screen bg-gray-50">
       <div style={{ height: '120px' }}></div>
       <Header />
@@ -206,6 +314,8 @@ const ReferralHRChatPage: React.FC = () => {
                   avatarUrl: otherParticipant?.avatarUrl,
                   isOnline: true
                 }}
+                onVoiceCall={() => startCall(false)}
+                onVideoCall={() => startCall(true)}
               />
 
               {/* Messages Area */}
@@ -274,6 +384,7 @@ const ReferralHRChatPage: React.FC = () => {
         </div>
       </div>
     </div>
+    </>
   );
 };
 
