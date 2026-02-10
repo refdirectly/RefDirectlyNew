@@ -39,7 +39,8 @@ export class ProductionAIJobService {
   private brightDataBrowserZone: string;
 
   constructor() {
-    this.groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
+    const apiKey = process.env.GROQ_API_KEY || '';
+    this.groq = new Groq({ apiKey, dangerouslyAllowBrowser: true });
     this.brightDataApiKey = process.env.BRIGHTDATA_API_KEY || '172ff4bb-aab7-4181-aebb-bae76aa5c558';
     this.brightDataBrowserZone = process.env.BRIGHTDATA_BROWSER_ZONE || 'your-browser-zone';
   }
