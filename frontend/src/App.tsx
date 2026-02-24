@@ -41,6 +41,9 @@ import ReferrerChatPage from './pages/ReferrerChatPage';
 import ResumeBuilder from './pages/ResumeBuilder';
 import ATSChecker from './pages/ATSChecker';
 import ApplicationsPage from './pages/ApplicationsPage';
+import ProfilePage from './pages/ProfilePage';
+import ProfileViewPage from './pages/ProfileViewPage';
+import ProfileEditPage from './pages/ProfileEditPage';
 import AdminDashboard from './pages/AdminDashboard';
 import AdminLoginPage from './pages/AdminLoginPage';
 import SalesDashboard from './pages/SalesDashboard';
@@ -140,6 +143,12 @@ function App() {
         <Route path="/seeker/wallet" element={<WalletPage />} />
         <Route path="/wallet-demo" element={<WalletDemoPage />} />
         <Route path="/seeker/dashboard" element={<DashboardPage />} />
+        <Route path="/seeker/profile" element={<ProfilePage />} />
+        <Route path="/profile" element={<ProfilePage />} />
+        <Route path="/profile/edit" element={<ProfilePage />} />
+        <Route path="/profile/view" element={<ProfileViewPage />} />
+        <Route path="/user-profile/edit" element={<ProfileEditPage />} />
+        <Route path="/user-profile/view" element={<ProfileViewPage />} />
         <Route path="/seeker/chat" element={<SeekerChatPage />} />
         <Route path="/seeker/verification" element={<VerificationDashboard />} />
         <Route path="/notifications" element={<NotificationsPage />} />

@@ -160,6 +160,16 @@ const Header: React.FC = () => {
                       </div>
                       <span className="text-gray-800 font-medium">Dashboard</span>
                     </Link>
+                    <Link
+                      to="/user-profile/view"
+                      onClick={() => setShowDropdown(false)}
+                      className="flex items-center gap-3 px-4 py-3 hover:bg-gradient-to-r hover:from-brand-magenta/10 hover:to-brand-teal/10 transition-all duration-200 group"
+                    >
+                      <div className="h-9 w-9 rounded-lg bg-gradient-to-r from-brand-magenta to-brand-teal flex items-center justify-center group-hover:scale-110 transition-transform">
+                        <User className="h-4 w-4 text-white" />
+                      </div>
+                      <span className="text-gray-800 font-medium">My Profile</span>
+                    </Link>
                     {user.role !== 'company_hr' && (
                       <Link
                         to={user.role === 'referrer' ? '/referrer/wallet' : '/seeker/wallet'}

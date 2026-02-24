@@ -2,12 +2,18 @@ import express from 'express';
 import OpenAI from 'openai';
 import User from '../models/User';
 import { authMiddleware, AuthRequest } from '../utils/auth';
+import * as matchingController from '../controllers/matchingController';
 
 const router = express.Router();
 const openai = new OpenAI({
   apiKey: process.env.GROQ_API_KEY || '',
   baseURL: 'https://api.groq.com/openai/v1'
 });
+
+// Smart matching endpoints
+router.get('/referrers', matchingController.getMatchedReferrers);
+router.get('/referrers/:referrerId/availability', matchingController.checkReferrerAvailability);
+router.post('/best-referrer', matchingController.getBestReferrer);
 
 // Find matching referrers using AI embeddings
 router.post('/find', authMiddleware, async (req: AuthRequest, res) => {

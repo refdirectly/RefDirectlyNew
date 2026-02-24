@@ -8,24 +8,41 @@ export interface IUser extends Document {
   email: string;
   passwordHash: string;
   phone?: string;
+  location?: string;
   linkedinUrl?: string;
   linkedinPassword?: string;
+  githubUrl?: string;
+  portfolioUrl?: string;
   resumeUrl?: string;
   experience?: number;
   currentCompany?: string;
-  company?: string; // For company_hr role
+  company?: string;
   currentTitle?: string;
+  expectedSalary?: string;
+  noticePeriod?: string;
   skills?: string[];
+  education?: Array<{
+    degree: string;
+    institution: string;
+    year: string;
+    grade: string;
+  }>;
+  workExperience?: Array<{
+    title: string;
+    company: string;
+    duration: string;
+    description: string;
+  }>;
   companies: Array<{
     name: string;
     verified: boolean;
     roles: string[];
   }>;
   pricePerReferral?: number;
-  pricePerSession?: number; // For HR experts
+  pricePerSession?: number;
   rating?: number;
   verified: boolean;
-  isActive: boolean; // For HR availability
+  isActive: boolean;
   createdAt: Date;
   lastSeenAt: Date;
   avatarUrl?: string;
@@ -56,21 +73,38 @@ const UserSchema = new Schema<IUser>({
     required: true
   },
   phone: String,
+  location: String,
   linkedinUrl: String,
   linkedinPassword: String,
+  githubUrl: String,
+  portfolioUrl: String,
   resumeUrl: String,
   experience: Number,
   currentCompany: String,
-  company: String, // For company_hr
+  company: String,
   currentTitle: String,
+  expectedSalary: String,
+  noticePeriod: String,
   skills: [String],
+  education: [{
+    degree: String,
+    institution: String,
+    year: String,
+    grade: String
+  }],
+  workExperience: [{
+    title: String,
+    company: String,
+    duration: String,
+    description: String
+  }],
   companies: [{
     name: String,
     verified: { type: Boolean, default: false },
     roles: [String]
   }],
   pricePerReferral: Number,
-  pricePerSession: Number, // For HR experts
+  pricePerSession: Number,
   rating: {
     type: Number,
     min: 0,

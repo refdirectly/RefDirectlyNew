@@ -15,15 +15,15 @@ export interface INotification extends Document {
 
 const NotificationSchema = new Schema({
   senderId: { type: Schema.Types.ObjectId, ref: 'User' },
-  recipientUserId: { type: Schema.Types.ObjectId, ref: 'User', required: true, index: true },
-  recipientRole: { type: String, enum: ['seeker', 'referrer', 'admin', 'company_hr'], required: true, index: true },
+  recipientUserId: { type: Schema.Types.ObjectId, ref: 'User', required: true },
+  recipientRole: { type: String, enum: ['seeker', 'referrer', 'admin', 'company_hr'], required: true },
   title: { type: String, required: true },
   message: { type: String, required: true },
   type: { type: String, enum: ['application', 'message', 'interview', 'status_update', 'system', 'referral', 'mention'], required: true },
   entityId: { type: String },
   avatarUrl: { type: String },
-  isRead: { type: Boolean, default: false, index: true },
-  createdAt: { type: Date, default: Date.now, index: true }
+  isRead: { type: Boolean, default: false },
+  createdAt: { type: Date, default: Date.now }
 });
 
 NotificationSchema.index({ recipientUserId: 1, isRead: 1, createdAt: -1 });

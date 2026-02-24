@@ -31,6 +31,7 @@ import notificationRoutes from './routes/notifications';
 import atsRoutes from './routes/ats';
 import adminRoutes from './routes/admin';
 import passwordRoutes from './routes/password';
+import adzunaRoutes from './routes/adzuna';
 import apiJobRoutes from './routes/apiJobs';
 import subscriptionRoutes from './routes/subscription';
 import salesRoutes from './routes/sales';
@@ -47,6 +48,12 @@ import testimonialRoutes from './routes/testimonials';
 import referralHRChatRoutes from './routes/referralHRChat';
 import companyHRRoutes from './routes/companyHR';
 import hrRoutes from './routes/hr';
+import companyReferrerRoutes from './routes/companyReferrer';
+import enhancedEscrowRoutes from './routes/enhancedEscrow';
+import withdrawalRoutes from './routes/withdrawals';
+import profileRoutes from './routes/profile';
+import resumeParserRoutes from './routes/resumeParser';
+import userProfileRoutes from './routes/userProfile';
 
 dotenv.config();
 
@@ -135,6 +142,7 @@ app.use('/api/notifications', notificationRoutes);
 app.use('/api/ai-resume', atsRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/password', passwordRoutes);
+app.use('/api/adzuna', adzunaRoutes);
 app.use('/api/api-jobs', apiJobRoutes);
 app.use('/api/subscription', subscriptionRoutes);
 app.use('/api/sales', salesRoutes);
@@ -148,6 +156,24 @@ app.use('/api/testimonials', testimonialRoutes);
 app.use('/api/referral-hr-chat', referralHRChatRoutes);
 app.use('/api/company-hr', companyHRRoutes);
 app.use('/api/hr', hrRoutes);
+app.use('/api/company', companyReferrerRoutes);
+app.use('/api/escrow', enhancedEscrowRoutes);
+app.use('/api/withdrawals', withdrawalRoutes);
+app.use('/api/profile', profileRoutes);
+app.use('/api/resume', resumeParserRoutes);
+app.use('/api/user-profile', userProfileRoutes);
+
+// Global error handler
+app.use((err: any, req: any, res: any, next: any) => {
+  console.error('=== GLOBAL ERROR HANDLER ===');
+  console.error('Error:', err);
+  console.error('Stack:', err.stack);
+  res.status(500).json({ 
+    success: false, 
+    error: 'Internal server error',
+    message: err.message 
+  });
+});
 
 // Health check
 app.get('/health', (req, res) => {
@@ -229,6 +255,19 @@ io.on('connection', (socket) => {
 });
 
 export { io };
+
+// Handle uncaught exceptions
+process.on('uncaughtException', (error) => {
+  console.error('=== UNCAUGHT EXCEPTION ===');
+  console.error('Error:', error);
+  console.error('Stack:', error.stack);
+});
+
+process.on('unhandledRejection', (reason, promise) => {
+  console.error('=== UNHANDLED REJECTION ===');
+  console.error('Reason:', reason);
+  console.error('Promise:', promise);
+});
 
 const PORT = process.env.PORT || 3001;
 server.listen(PORT, () => {

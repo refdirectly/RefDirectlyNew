@@ -1,5 +1,5 @@
 import express from 'express';
-import { register, login, googleAuth, googleCallback, linkedinAuth, linkedinCallback, sendSignupOTP, verifySignupOTP, forgotPassword, resetPassword } from '../controllers/authController';
+import { register, login, googleAuth, googleCallback, linkedinAuth, linkedinCallback, sendSignupOTP, verifySignupOTP, forgotPassword, resetPassword, getProfile, updateProfile } from '../controllers/authController';
 import passport from '../config/passport';
 import { authMiddleware } from '../utils/auth';
 import User from '../models/User';
@@ -12,6 +12,8 @@ router.post('/register', register);
 router.post('/login', login);
 router.post('/forgot-password', forgotPassword);
 router.post('/reset-password', resetPassword);
+router.get('/profile', authMiddleware, getProfile);
+router.put('/profile', authMiddleware, updateProfile);
 router.get('/google', googleAuth);
 router.get('/google/callback', passport.authenticate('google', { session: false }), googleCallback);
 router.get('/linkedin', linkedinAuth);

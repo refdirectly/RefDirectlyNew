@@ -128,8 +128,8 @@ const DashboardPage: React.FC = () => {
 
   const recentActivity = dashboardData?.recentActivity?.map((activity: any) => ({
     type: activity.type,
-    company: activity.jobId?.company || 'Company',
-    role: activity.jobId?.title || 'Position',
+    company: activity.company || activity.jobId?.company || activity.jobTitle?.split(' at ')[1] || 'Company',
+    role: activity.jobTitle || activity.jobId?.title || activity.jobTitle?.split(' at ')[0] || 'Position',
     status: activity.status,
     time: new Date(activity.createdAt).toLocaleDateString()
   })) || [];

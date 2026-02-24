@@ -430,3 +430,39 @@ export const resetPassword = async (req: Request, res: Response) => {
     res.status(500).json({ success: false, message: 'Failed to reset password' });
   }
 };
+
+export const getProfile = async (req: any, res: Response) => {
+  try {
+    const userId = req.user?.userId;
+    const user = await User.findById(userId).select('-passwordHash -resetPasswordToken');
+    
+    if (!user) {
+      return res.status(404).json({ success: false, message: 'User not found' });
+    }
+
+    res.json(user);
+  } catch (error: any) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+export const updateProfile = async (req: any, res: Response) => {
+  try {
+    const userId = req.user?.userId;
+    const updates = req.body;
+    
+    delete updates.passwordHash;
+    delete updates.role;
+    delete updates._id;
+    
+    const user = await User.findByIdAndUpdate(userId, updates, { new: true }).select('-passwordHash');
+    
+    if (!user) {
+      return res.status(404).json({ success: false, message: 'User not found' });
+    }
+
+    res.json(user);
+  } catch (error: any) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};

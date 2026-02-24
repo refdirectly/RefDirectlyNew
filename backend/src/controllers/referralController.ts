@@ -5,7 +5,7 @@ import User from '../models/User';
 import { AuthRequest } from '../middleware/auth';
 import ReferralRequest from '../models/ReferralRequest';
 import notificationService from '../services/notificationService';
-import walletService from '../services/walletService';
+import enhancedEscrowService from '../services/enhancedEscrowService';
 
 export const createReferral = async (req: AuthRequest, res: Response) => {
   try {
@@ -192,13 +192,20 @@ export const updateReferralStatus = async (req: AuthRequest, res: Response) => {
       updateData.referrerId = req.user?.userId;
       updateData.acceptedAt = new Date();
       
-      // Lock funds from seeker's wallet to escrow
+      // Lock funds from seeker's wallet to escrow with fraud detection
       try {
-        await walletService.lockFundsToEscrow(
+        const metadata = {
+          ipAddress: req.ip,
+          userAgent: req.get('user-agent'),
+          deviceId: req.get('x-device-id')
+        };
+        
+        await enhancedEscrowService.lockFundsInEscrow(
           referralId,
           (referral.seekerId as any)._id.toString(),
           req.user?.userId!,
-          referral.reward || 5000
+          referral.reward || 99,
+          metadata
         );
       } catch (error: any) {
         return res.status(400).json({ 
@@ -259,23 +266,29 @@ export const updateReferralStatus = async (req: AuthRequest, res: Response) => {
         entityId: updatedReferral!._id.toString()
       });
     } else if (status === 'completed') {
-      // ESCROW RELEASE: Release funds to referrer
+      // ESCROW RELEASE: Release funds to referrer (70/30 split)
       try {
-        await walletService.releaseEscrow(referralId);
+        await enhancedEscrowService.releaseFunds(referralId);
       } catch (error: any) {
         console.error('Escrow release error:', error);
       }
       
       if (updatedReferral!.referrerId) {
-        const seeker = await User.findById(updatedReferral!.seekerId);
         await notificationService.create({
           recipientUserId: (updatedReferral!.referrerId as any)._id.toString(),
           recipientRole: 'referrer',
           title: '💰 Payment Released!',
-          message: `₹${updatedReferral!.reward} credited to your wallet for ${updatedReferral!.role} referral.`,
+          message: `70% of ₹${updatedReferral!.reward} (₹${Math.round(updatedReferral!.reward * 0.7)}) credited to your wallet for ${updatedReferral!.role} referral.`,
           type: 'status_update',
           entityId: updatedReferral!._id.toString()
         });
+      }
+    } else if (status === 'rejected' && updatedReferral!.status === 'accepted') {
+      // REFUND: If referral was accepted but then rejected
+      try {
+        await enhancedEscrowService.refundFunds(referralId, 'Referral rejected by referrer');
+      } catch (error: any) {
+        console.error('Refund error:', error);
       }
     }
     

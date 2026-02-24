@@ -5,20 +5,17 @@ import Header from '../components/Header';
 import Footer from '../components/Footer';
 
 interface Job {
-  job_id: string;
-  job_title: string;
-  employer_name: string;
-  employer_logo?: string;
-  job_city?: string;
-  job_state?: string;
-  job_country?: string;
-  job_employment_type?: string;
-  job_salary?: string;
-  job_posted_at_datetime_utc?: string;
-  job_description?: string;
-  job_apply_link?: string;
-  job_google_link?: string;
-  job_url?: string;
+  _id: string;
+  title: string;
+  company: string;
+  companyLogo?: string;
+  location: string;
+  type?: string;
+  salary?: string;
+  description?: string;
+  applyUrl?: string;
+  postedDate?: string;
+  availableReferrers?: number;
 }
 
 const AIJobSearchPage: React.FC = () => {
@@ -66,20 +63,16 @@ const AIJobSearchPage: React.FC = () => {
     setLoading(true);
     try {
       const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
-      console.log('Fetching initial jobs...');
-      const response = await fetch(`${API_URL}/api/jobs/live?keywords=software engineer&location=any&num_pages=2`);
+      const response = await fetch(`${API_URL}/api/jobs/live?keywords=software engineer&location=in&page=1`);
       const result = await response.json();
-      console.log('Initial Jobs Response:', result);
       
-      if (result.success && result.jobs && Array.isArray(result.jobs)) {
-        console.log('Loaded initial jobs:', result.jobs.length);
+      if (result.jobs && Array.isArray(result.jobs)) {
         setJobs(result.jobs);
       } else {
-        console.error('Invalid initial response:', result);
         setJobs([]);
       }
     } catch (error) {
-      console.error('Failed to fetch initial jobs:', error);
+      console.error('Failed to fetch jobs:', error);
       setJobs([]);
     } finally {
       setLoading(false);
@@ -92,16 +85,12 @@ const AIJobSearchPage: React.FC = () => {
     setLoading(true);
     try {
       const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
-      console.log('AI Search Query:', aiQuery);
-      const response = await fetch(`${API_URL}/api/jobs/live?keywords=${encodeURIComponent(aiQuery)}&location=any&num_pages=2`);
+      const response = await fetch(`${API_URL}/api/jobs/live?keywords=${encodeURIComponent(aiQuery)}&location=in&page=1`);
       const result = await response.json();
-      console.log('AI Search Response:', result);
       
-      if (result.success && result.jobs && Array.isArray(result.jobs)) {
-        console.log('Found jobs:', result.jobs.length);
+      if (result.jobs && Array.isArray(result.jobs)) {
         setJobs(result.jobs);
       } else {
-        console.error('Invalid response format:', result);
         setJobs([]);
       }
     } catch (error) {
@@ -116,25 +105,17 @@ const AIJobSearchPage: React.FC = () => {
     setAiQuery(suggestion);
     setTimeout(() => {
       const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
-      const keywords = suggestion.toLowerCase();
       setLoading(true);
-      console.log('Suggestion Search:', keywords);
-      fetch(`${API_URL}/api/jobs/live?keywords=${encodeURIComponent(keywords)}&location=any&num_pages=2`)
+      fetch(`${API_URL}/api/jobs/live?keywords=${encodeURIComponent(suggestion)}&location=in&page=1`)
         .then(res => res.json())
         .then(result => {
-          console.log('Suggestion Response:', result);
-          if (result.success && result.jobs && Array.isArray(result.jobs)) {
-            console.log('Found jobs:', result.jobs.length);
+          if (result.jobs && Array.isArray(result.jobs)) {
             setJobs(result.jobs);
           } else {
-            console.error('Invalid response:', result);
             setJobs([]);
           }
         })
-        .catch(err => {
-          console.error('Fetch error:', err);
-          setJobs([]);
-        })
+        .catch(() => setJobs([]))
         .finally(() => setLoading(false));
     }, 100);
   };
@@ -158,7 +139,7 @@ const AIJobSearchPage: React.FC = () => {
       return;
     }
 
-    setApplyingJobs(prev => new Set(prev).add(job.job_id));
+    setApplyingJobs(prev => new Set(prev).add(job._id));
     
     try {
       const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
@@ -169,22 +150,22 @@ const AIJobSearchPage: React.FC = () => {
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-          externalJobId: job.job_id,
-          jobTitle: job.job_title,
-          company: job.employer_name,
+          externalJobId: job._id,
+          jobTitle: job.title,
+          company: job.company,
           status: 'applied'
         })
       });
 
       if (response.ok) {
-        setAppliedJobs(prev => new Set(prev).add(job.job_id));
+        setAppliedJobs(prev => new Set(prev).add(job._id));
       }
     } catch (error) {
       console.error('Failed to apply:', error);
     } finally {
       setApplyingJobs(prev => {
         const newSet = new Set(prev);
-        newSet.delete(job.job_id);
+        newSet.delete(job._id);
         return newSet;
       });
     }
@@ -197,7 +178,7 @@ const AIJobSearchPage: React.FC = () => {
       return;
     }
 
-    setRequestingReferrals(prev => new Set(prev).add(job.job_id));
+    setRequestingReferrals(prev => new Set(prev).add(job._id));
     
     try {
       const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
@@ -208,20 +189,20 @@ const AIJobSearchPage: React.FC = () => {
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-          title: job.job_title,
-          company: job.employer_name,
-          location: job.job_city && job.job_state ? `${job.job_city}, ${job.job_state}` : job.job_country,
-          description: job.job_description,
-          employerLogo: job.employer_logo,
-          employmentType: job.job_employment_type,
-          datePosted: job.job_posted_at_datetime_utc
+          title: job.title,
+          company: job.company,
+          location: job.location,
+          description: job.description,
+          employerLogo: job.companyLogo,
+          employmentType: job.type,
+          datePosted: job.postedDate
         })
       });
 
       const result = await response.json();
 
       if (result.success) {
-        setRequestedReferrals(prev => new Set(prev).add(job.job_id));
+        setRequestedReferrals(prev => new Set(prev).add(job._id));
         alert(`✅ ${result.message}\n\nTokens Remaining: ${result.data.tokensRemaining}`);
       } else {
         alert(`❌ ${result.message}`);
@@ -232,7 +213,7 @@ const AIJobSearchPage: React.FC = () => {
     } finally {
       setRequestingReferrals(prev => {
         const newSet = new Set(prev);
-        newSet.delete(job.job_id);
+        newSet.delete(job._id);
         return newSet;
       });
     }
@@ -245,7 +226,7 @@ const AIJobSearchPage: React.FC = () => {
       return;
     }
 
-    const unappliedJobs = jobs.filter(job => !appliedJobs.has(job.job_id)).slice(0, 10);
+    const unappliedJobs = jobs.filter(job => !appliedJobs.has(job._id)).slice(0, 10);
     
     if (unappliedJobs.length === 0) {
       alert('ℹ️ All jobs already applied!\n\nSearch for different jobs (e.g., "Product Manager", "Data Scientist") to find new opportunities.');
@@ -261,12 +242,12 @@ const AIJobSearchPage: React.FC = () => {
       setBotStatus(`🚀 AI Bot applying to ${unappliedJobs.length} jobs...`);
       
       const minimalJobs = unappliedJobs.map(job => ({
-        job_id: job.job_id,
-        job_title: job.job_title,
-        employer_name: job.employer_name,
-        job_apply_link: (job as any).job_apply_link,
-        job_google_link: (job as any).job_google_link,
-        job_url: (job as any).job_url
+        job_id: job._id,
+        job_title: job.title,
+        employer_name: job.company,
+        job_apply_link: job.applyUrl,
+        job_google_link: job.applyUrl,
+        job_url: job.applyUrl
       }));
       
       const response = await fetch(`${API_URL}/api/applications/bulk`, {
@@ -437,7 +418,7 @@ const AIJobSearchPage: React.FC = () => {
               <div className="space-y-4">
                 {jobs.map((job, index) => (
                   <motion.div
-                    key={job.job_id}
+                    key={job._id}
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: index * 0.05 }}
@@ -445,11 +426,11 @@ const AIJobSearchPage: React.FC = () => {
                   >
                     <div className="flex gap-4">
                       <div className="flex-shrink-0">
-                        {job.employer_logo ? (
-                          <img src={job.employer_logo} alt={job.employer_name} className="h-14 w-14 rounded-xl object-cover" />
+                        {job.companyLogo ? (
+                          <img src={job.companyLogo} alt={job.company} className="h-14 w-14 rounded-xl object-cover" />
                         ) : (
                           <div className="h-14 w-14 rounded-xl bg-gradient-primary flex items-center justify-center text-white font-bold text-xl">
-                            {job.employer_name.charAt(0)}
+                            {job.company.charAt(0)}
                           </div>
                         )}
                       </div>
@@ -457,11 +438,11 @@ const AIJobSearchPage: React.FC = () => {
                         <div className="flex items-start justify-between mb-2">
                           <div>
                             <h3 className="text-xl font-bold text-gray-900 group-hover:text-brand-purple transition-colors">
-                              {job.job_title}
+                              {job.title}
                             </h3>
                             <div className="flex items-center gap-2 text-gray-600 mt-1">
                               <Building2 className="h-4 w-4" />
-                              <span className="font-semibold">{job.employer_name}</span>
+                              <span className="font-semibold">{job.company}</span>
                             </div>
                           </div>
                           <span className="bg-gradient-primary text-white text-xs font-bold px-3 py-1.5 rounded-full">
@@ -469,46 +450,44 @@ const AIJobSearchPage: React.FC = () => {
                           </span>
                         </div>
                         <div className="flex flex-wrap items-center gap-4 text-sm text-gray-600 mb-3">
-                          {(job.job_city || job.job_state) && (
-                            <div className="flex items-center gap-1">
-                              <MapPin className="h-4 w-4" />
-                              <span>{job.job_city && job.job_state ? `${job.job_city}, ${job.job_state}` : job.job_country}</span>
-                            </div>
-                          )}
-                          {job.job_employment_type && (
+                          <div className="flex items-center gap-1">
+                            <MapPin className="h-4 w-4" />
+                            <span>{job.location}</span>
+                          </div>
+                          {job.type && (
                             <div className="flex items-center gap-1">
                               <Briefcase className="h-4 w-4" />
-                              <span>{job.job_employment_type}</span>
+                              <span>{job.type}</span>
                             </div>
                           )}
-                          {job.job_salary && (
+                          {job.salary && (
                             <div className="flex items-center gap-1">
                               <DollarSign className="h-4 w-4" />
-                              <span>{job.job_salary}</span>
+                              <span>{job.salary}</span>
                             </div>
                           )}
                           <div className="flex items-center gap-1">
                             <Clock className="h-4 w-4" />
-                            <span>{getTimeAgo(job.job_posted_at_datetime_utc)}</span>
+                            <span>{getTimeAgo(job.postedDate)}</span>
                           </div>
                         </div>
-                        {job.job_description && (
+                        {job.description && (
                           <p className="text-gray-600 text-sm line-clamp-2">
-                            {job.job_description.replace(/<[^>]*>/g, '').substring(0, 200)}...
+                            {job.description.replace(/<[^>]*>/g, '').substring(0, 200)}...
                           </p>
                         )}
                         <div className="mt-4 flex gap-3">
                           <button
                             onClick={() => handleAIApply(job)}
-                            disabled={applyingJobs.has(job.job_id) || appliedJobs.has(job.job_id)}
+                            disabled={applyingJobs.has(job._id) || appliedJobs.has(job._id)}
                             className="bg-gradient-primary text-white px-6 py-2 rounded-lg font-semibold hover:shadow-lg transition-all duration-200 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
                           >
-                            {applyingJobs.has(job.job_id) ? (
+                            {applyingJobs.has(job._id) ? (
                               <>
                                 <div className="h-4 w-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
                                 AI Applying...
                               </>
-                            ) : appliedJobs.has(job.job_id) ? (
+                            ) : appliedJobs.has(job._id) ? (
                               '✓ AI Applied'
                             ) : (
                               'AI Apply Now'
@@ -516,15 +495,15 @@ const AIJobSearchPage: React.FC = () => {
                           </button>
                           <button
                             onClick={() => handleRequestReferral(job)}
-                            disabled={requestingReferrals.has(job.job_id) || requestedReferrals.has(job.job_id)}
+                            disabled={requestingReferrals.has(job._id) || requestedReferrals.has(job._id)}
                             className="border-2 border-brand-purple text-brand-purple px-6 py-2 rounded-lg font-semibold hover:bg-brand-purple hover:text-white transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
                           >
-                            {requestingReferrals.has(job.job_id) ? (
+                            {requestingReferrals.has(job._id) ? (
                               <>
                                 <div className="h-4 w-4 border-2 border-brand-purple border-t-transparent rounded-full animate-spin" />
                                 Requesting...
                               </>
-                            ) : requestedReferrals.has(job.job_id) ? (
+                            ) : requestedReferrals.has(job._id) ? (
                               '✓ Referral Requested'
                             ) : (
                               'Request Referral'

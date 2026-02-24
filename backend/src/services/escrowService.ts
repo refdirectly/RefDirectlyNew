@@ -1,22 +1,24 @@
 import EscrowTransaction from '../models/EscrowTransaction';
 import Wallet from '../models/Wallet';
 
-export const createEscrow = async (candidateId: string, referrerId: string, referralRequestId: string, amount: number) => {
+export const createEscrow = async (seekerId: string, referrerId: string, referralRequestId: string, amount: number) => {
   const expiryAt = new Date();
   expiryAt.setDate(expiryAt.getDate() + 3); // 3 days
 
   const escrow = await EscrowTransaction.create({
-    candidateId,
+    seekerId,
     referrerId,
-    referralRequestId,
+    referralId: referralRequestId,
     amount,
-    expiryAt
+    platformFee: Math.round(amount * 0.3),
+    referrerAmount: Math.round(amount * 0.7),
+    status: 'LOCKED'
   });
 
-  // Deduct from candidate wallet and add to escrow
+  // Deduct from seeker wallet and add to escrow
   await Wallet.findOneAndUpdate(
-    { userId: candidateId },
-    { $inc: { balance: -amount, escrowBalance: amount } },
+    { userId: seekerId },
+    { $inc: { freeBalance: -amount, lockedBalance: amount } },
     { upsert: true }
   );
 
@@ -26,7 +28,7 @@ export const createEscrow = async (candidateId: string, referrerId: string, refe
 export const acceptEscrow = async (escrowId: string) => {
   return await EscrowTransaction.findByIdAndUpdate(
     escrowId,
-    { status: 'in_progress' },
+    { status: 'APPROVED' },
     { new: true }
   );
 };
@@ -35,24 +37,24 @@ export const completeEscrow = async (escrowId: string, proofUrl?: string) => {
   const escrow = await EscrowTransaction.findById(escrowId);
   if (!escrow) throw new Error('Escrow not found');
 
-  // Release funds to referrer (60% after platform fee)
-  const referrerAmount = escrow.amount * 0.6;
+  // Release funds to referrer (70%)
+  const referrerAmount = escrow.referrerAmount;
   
   await Wallet.findOneAndUpdate(
     { userId: escrow.referrerId },
-    { $inc: { balance: referrerAmount, totalEarned: referrerAmount } },
+    { $inc: { totalBalance: referrerAmount, freeBalance: referrerAmount } },
     { upsert: true }
   );
 
-  // Remove from candidate escrow
+  // Remove from seeker escrow
   await Wallet.findOneAndUpdate(
-    { userId: escrow.candidateId },
-    { $inc: { escrowBalance: -escrow.amount } }
+    { userId: escrow.seekerId },
+    { $inc: { lockedBalance: -escrow.amount } }
   );
 
   return await EscrowTransaction.findByIdAndUpdate(
     escrowId,
-    { status: 'completed', completedAt: new Date(), proofUrl },
+    { status: 'RELEASED', releasedAt: new Date() },
     { new: true }
   );
 };
@@ -61,23 +63,23 @@ export const refundEscrow = async (escrowId: string) => {
   const escrow = await EscrowTransaction.findById(escrowId);
   if (!escrow) throw new Error('Escrow not found');
 
-  // Refund to candidate
+  // Refund to seeker
   await Wallet.findOneAndUpdate(
-    { userId: escrow.candidateId },
-    { $inc: { balance: escrow.amount, escrowBalance: -escrow.amount } }
+    { userId: escrow.seekerId },
+    { $inc: { freeBalance: escrow.amount, lockedBalance: -escrow.amount } }
   );
 
   return await EscrowTransaction.findByIdAndUpdate(
     escrowId,
-    { status: 'refunded', completedAt: new Date() },
+    { status: 'REFUNDED', refundedAt: new Date() },
     { new: true }
   );
 };
 
 export const checkExpiredEscrows = async () => {
   const expired = await EscrowTransaction.find({
-    status: 'in_progress',
-    expiryAt: { $lt: new Date() }
+    status: 'LOCKED',
+    createdAt: { $lt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000) }
   });
 
   for (const escrow of expired) {

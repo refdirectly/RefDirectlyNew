@@ -1,6 +1,8 @@
 import { Request, Response } from 'express';
 import { fetchLinkedInJobs, fetchJobsJsearch, fetchJobsSearchAPI } from '../services/linkedinScraper';
+import { fetchAdzunaJobs } from '../services/adzunaService';
 import Job from '../models/Job';
+import User from '../models/User';
 
 export const scrapeAndSaveJobs = async (req: Request, res: Response) => {
   try {
@@ -50,22 +52,50 @@ export const scrapeAndSaveJobs = async (req: Request, res: Response) => {
 };
 
 export const fetchLiveJobs = async (req: Request, res: Response) => {
+  const { keywords = 'software engineer', location = 'in', page = '1' } = req.query;
+  
   try {
-    const { keywords = 'software engineer', location = 'United States' } = req.query;
+    console.log(`Fetching jobs: keywords="${keywords}", location="${location}", page=${page}`);
     
-    // Use Jsearch API (reliable)
-    const jobs = await fetchJobsJsearch(keywords as string, location as string);
+    // Try Adzuna API first (prioritize India)
+    try {
+      const result = await fetchAdzunaJobs(keywords as string, location as string, parseInt(page as string));
+      console.log(`✅ Adzuna API success: ${result.count} jobs from ${location}, page ${page} of ${result.totalPages}, total: ${result.totalCount}`);
+      return res.json(result);
+    } catch (adzunaError: any) {
+      console.warn('⚠️ Adzuna API failed, falling back to JSearch:', adzunaError.message);
+    }
     
+    // Fallback to JSearch
+    const jobs = await fetchJobsJsearch(keywords as string, location === 'in' ? 'India' : 'United States');
+    
+    // Add referrer count for each job
+    const jobsWithReferrers = await Promise.all(
+      jobs.map(async (job: any) => {
+        const company = job.employer_name || job.company;
+        const referrerCount = await User.countDocuments({
+          role: 'referrer',
+          verified: true,
+          'companies.name': { $regex: new RegExp(`^${company}$`, 'i') },
+          'companies.verified': true
+        });
+        return { ...job, availableReferrers: referrerCount };
+      })
+    );
+    
+    console.log(`✅ JSearch fallback success: ${jobsWithReferrers.length} jobs`);
     res.json({ 
       success: true, 
-      count: jobs?.length || 0,
-      jobs: jobs || []
+      count: jobsWithReferrers?.length || 0,
+      jobs: jobsWithReferrers || [],
+      source: 'jsearch'
     });
   } catch (error: any) {
-    console.error('Live jobs error:', error.response?.data || error.message);
+    console.error('❌ All job sources failed:', error.message);
     res.status(500).json({ 
       success: false, 
-      message: error.response?.data?.message || error.message || 'Failed to fetch jobs'
+      message: 'Failed to fetch jobs from all sources',
+      error: error.message
     });
   }
 };
